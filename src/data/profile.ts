@@ -11,7 +11,7 @@ export const profile = {
   availability: 'Open to remote work and relocation.',
   email: 'samimassoud67@gmail.com',
   links: {
-    github: 'https://github.com/samimassoud',
+    github: 'https://github.com/samihajji',
     linkedin: 'https://www.linkedin.com/in/samihajji',
   },
   /**

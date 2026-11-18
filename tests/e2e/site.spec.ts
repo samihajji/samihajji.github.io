@@ -186,7 +186,7 @@ test('metadata: title, description, canonical, Open Graph and structured data', 
   expect((await request.get('/favicon.svg')).status()).toBe(200);
   const ld = JSON.parse((await page.locator('script[type="application/ld+json"]').textContent())!);
   expect(ld['@type']).toBe('Person');
-  expect(ld.sameAs).toContain('https://github.com/samimassoud');
+  expect(ld.sameAs).toContain('https://github.com/samihajji');
 });
 
 test('unknown paths get the 404 sheet', async ({ page }) => {

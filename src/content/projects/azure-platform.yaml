@@ -1,11 +1,11 @@
-# Source: github.com/samimassoud/azure-aks-platform README ("What's next: Phase 2"),
+# Source: github.com/samihajji/azure-aks-platform README ("What's next: Phase 2"),
 # docs/architecture/README.md and docs/astronomy-shop/. Phase 2 has not started; everything here
 # is a design or an open decision, and is presented as such.
 title: Azure cloud-native platform, Phase 2
 order: 4
 status: planned
 period: Next, after the Cilium sandbox
-repository: samimassoud/azure-aks-platform
+repository: samihajji/azure-aks-platform
 role: Sole engineer. The design and the workload analysis are written. The cluster isn't built yet.
 summary: >-
   A long-lived AKS cluster on Azure CNI Powered by Cilium, delivered by Argo CD, running the
@@ -49,4 +49,4 @@ stack:
   - OpenTelemetry
 links:
   - label: Roadmap and design
-    href: https://github.com/samimassoud/azure-aks-platform#whats-next-phase-2
+    href: https://github.com/samihajji/azure-aks-platform#whats-next-phase-2

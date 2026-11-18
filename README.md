@@ -89,7 +89,7 @@ tests/e2e/                  Playwright and axe-core suite
 
 ## Deploy to GitHub Pages
 
-The repository is `samimassoud/samimassoud.github.io`, so the site is served at the root: https://samimassoud.github.io/. Pages is set to deploy from **GitHub Actions**. Every push to `main` type-checks, runs the Playwright suite, builds with the Pages origin and base path, and deploys `dist/`. Pull requests run the checks without deploying.
+The repository is `samihajji/samihajji.github.io`, so the site is served at the root: https://samihajji.github.io/. Pages is set to deploy from **GitHub Actions**. Every push to `main` type-checks, runs the Playwright suite, builds with the Pages origin and base path, and deploys `dist/`. Pull requests run the checks without deploying.
 
 Run `gitleaks git --pre-commit --staged` before each commit, and `gitleaks git` over the full history before pushing.
 

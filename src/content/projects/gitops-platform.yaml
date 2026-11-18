@@ -1,10 +1,10 @@
-# Source: github.com/samimassoud/webhook-task-pipeline-dl (git history 2026-06-29 to 2026-09-01),
+# Source: github.com/samihajji/webhook-task-pipeline-dl (git history 2026-06-29 to 2026-09-01),
 # platform/argo-phase/**, .github/workflows/{ci,helm-ci}.yaml.
 title: GitOps-managed Kubernetes platform
 order: 2
 status: complete
 period: June – September 2026
-repository: samimassoud/webhook-task-pipeline-dl
+repository: samihajji/webhook-task-pipeline-dl
 role: Sole engineer, on my own application and my own time, in parallel with the internship.
 summary: >-
   A webhook task-processing service I had written (API, worker, PostgreSQL, Drizzle migrations)
@@ -93,6 +93,6 @@ stack:
   - TypeScript
 links:
   - label: Repository
-    href: https://github.com/samimassoud/webhook-task-pipeline-dl
+    href: https://github.com/samihajji/webhook-task-pipeline-dl
   - label: Argo CD applications
-    href: https://github.com/samimassoud/webhook-task-pipeline-dl/tree/main/platform/argo-phase/applications
+    href: https://github.com/samihajji/webhook-task-pipeline-dl/tree/main/platform/argo-phase/applications
