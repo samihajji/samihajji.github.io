@@ -1,0 +1,32 @@
+---
+/**
+ * A pair of pencil-drawn eyes, as an SVG fragment to place inside a parent
+ * <svg data-eyes>. Pupils rest looking slightly down; scripts/eyes.ts makes
+ * them blink and, where enabled, look toward the pointer or a focused link.
+ */
+import { loop, line } from '../../lib/sketch';
+
+interface Props {
+  x: number;
+  y: number;
+  gap?: number;
+  rx?: number;
+  ry?: number;
+  seed?: number;
+  delay?: number;
+}
+const { x, y, gap = 40, rx = 11, ry = 13, seed = 7, delay = 1000 } = Astro.props;
+const eyes = [x, x + gap];
+---
+{eyes.map((cx, i) => (
+  <g class="eyes__one">
+    <path class="eyes__brow draw" d={line([cx - rx + 1, y - ry - 9 + i], [cx + rx - 2, y - ry - 11 - i], seed + 20 + i, { bow: 2.2 })} pathLength="1" style={`--d: ${delay + 120}ms; --dur: 260ms`} />
+    <g class="eye" style={`--d: ${delay}ms`}>
+      <path class="eyes__white" d={loop(cx, y, rx, ry, seed + i * 3)} />
+      <g class="pupil">
+        <circle cx={cx} cy={y + 1} r={rx * 0.44} class="eyes__pupil" />
+        <circle cx={cx + rx * 0.17} cy={y - rx * 0.12} r={rx * 0.12} class="eyes__glint" />
+      </g>
+    </g>
+  </g>
+))}

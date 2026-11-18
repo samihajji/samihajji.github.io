@@ -1,0 +1,146 @@
+---
+/**
+ * Divider between main sheets: the bottom of a pad sheet torn off along its
+ * perforation, with scissors at the start of the cut. The torn edge casts a
+ * thin shadow onto the sheet below. The scissors snip once when it scrolls
+ * into view.
+ */
+import { rng } from '../../lib/sketch';
+
+interface Props {
+  seed?: number;
+}
+const { seed = 1 } = Astro.props;
+const r = rng(seed * 31 + 7);
+const W = 1000;
+const start = 120;
+// Torn paper: a wandering baseline with small, irregular fibrous jags and
+// the occasional deeper notch, not a regular zigzag.
+const pts: [number, number][] = [[start, 16]];
+let x = start;
+let drift = 0;
+while (x < W) {
+  x = Math.min(W, x + 3 + r() * 9);
+  drift = Math.max(-5, Math.min(5, drift + (r() - 0.5) * 2.4));
+  const jag = (r() - 0.5) * (r() < 0.12 ? 11 : 4.5);
+  pts.push([Math.round(x * 10) / 10, Math.round((16 + drift + jag) * 10) / 10]);
+}
+const edge = 'M' + pts.map((p) => p.join(' ')).join(' L');
+const shadow = edge + ' ' + [...pts].reverse().map((p) => `L${p[0]} ${p[1] + 5 + Math.abs(p[1] - 16) * 0.3}`).join(' ') + ' Z';
+---
+<div class="sheet-break" aria-hidden="true" data-draw>
+  <div class="sheet-break__inner">
+    <svg class="sheet-break__scissors" viewBox="0 0 40 28" focusable="false">
+      <g class="sheet-break__blade sheet-break__blade--top">
+        <path d="M13.5 10.2 C 20 11.8, 29 13.4, 39 14.2" />
+        <path d="M11.6 7.4 C 12.2 3.4, 7.6 1.2, 4.6 3.2 C 1.6 5.2, 2.4 10, 6.4 10.8 C 8.8 11.3, 11 10, 11.6 7.4" />
+      </g>
+      <g class="sheet-break__blade sheet-break__blade--bottom">
+        <path d="M13.5 17.8 C 20 16.2, 29 14.6, 39 13.8" />
+        <path d="M11.6 20.6 C 12.2 24.6, 7.6 26.8, 4.6 24.8 C 1.6 22.8, 2.4 18, 6.4 17.2 C 8.8 16.7, 11 18, 11.6 20.6" />
+      </g>
+    </svg>
+    <svg class="sheet-break__tear" viewBox={`0 0 ${W} 32`} preserveAspectRatio="none" focusable="false">
+      <path class="sheet-break__perf" d={`M4 16 L${start} 16`} />
+      <path class="sheet-break__shadow" d={shadow} />
+      <path class="sheet-break__edge" d={edge} />
+    </svg>
+  </div>
+</div>
+
+<style>
+  .sheet-break {
+    display: grid;
+    grid-template-columns: var(--margin) minmax(0, 1fr);
+    padding-block: var(--s-3);
+  }
+
+  .sheet-break__inner {
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    margin-left: -0.6rem;
+  }
+
+  .sheet-break__scissors {
+    flex: none;
+    width: 2.9rem;
+    height: auto;
+    overflow: visible;
+    transform: rotate(-4deg);
+  }
+
+  .sheet-break__scissors path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .sheet-break__blade {
+    transform-box: view-box;
+    transform-origin: 13px 14px;
+  }
+
+  .sheet-break__tear {
+    flex: 1;
+    min-width: 0;
+    height: 2rem;
+  }
+
+  .sheet-break__tear path {
+    vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .sheet-break__perf {
+    fill: none;
+    stroke: var(--pencil);
+    stroke-width: 1.4;
+    stroke-dasharray: 3 5;
+  }
+
+  .sheet-break__shadow {
+    fill: var(--pad-shade);
+    stroke: none;
+    opacity: 0.9;
+  }
+
+  .sheet-break__edge {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.5;
+  }
+
+  @keyframes snip-top {
+    0%, 100% { transform: rotate(0); }
+    25%, 75% { transform: rotate(11deg); }
+    50% { transform: rotate(0); }
+  }
+
+  @keyframes snip-bottom {
+    0%, 100% { transform: rotate(0); }
+    25%, 75% { transform: rotate(-11deg); }
+    50% { transform: rotate(0); }
+  }
+
+  :global(html.motion) .sheet-break:global(.is-drawn) .sheet-break__blade--top {
+    animation: snip-top 620ms var(--ease-out) 380ms both;
+  }
+
+  :global(html.motion) .sheet-break:global(.is-drawn) .sheet-break__blade--bottom {
+    animation: snip-bottom 620ms var(--ease-out) 380ms both;
+  }
+
+  @media (max-width: 47.99rem) {
+    .sheet-break__scissors {
+      width: 2rem;
+    }
+    .sheet-break__tear {
+      height: 1.6rem;
+    }
+  }
+</style>

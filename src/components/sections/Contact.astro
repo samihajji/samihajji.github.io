@@ -1,0 +1,208 @@
+---
+/**
+ * The last page. The eyes from the first sheet come back and look toward
+ * whichever contact link you hover or focus.
+ */
+import Sheet from '../sheet/Sheet.astro';
+import Eyes from '../sketch/Eyes.astro';
+import { profile } from '../../data/profile';
+import { cvInfo } from '../../lib/paths';
+import { line } from '../../lib/sketch';
+
+interface Props {
+  number: number;
+  total: number;
+}
+const { number, total } = Astro.props;
+const cv = cvInfo();
+const ledge = line([6, 62], [174, 62], 91, { bow: 1.4, overshoot: 4 });
+const head = 'M50 63 C 49 30, 66 14, 88 14 C 110 14, 127 30, 126 63';
+---
+<Sheet
+  id="contact"
+  number={number}
+  total={total}
+  subject="Contact"
+  fields={[{ label: 'Location', value: profile.location }]}
+  title="Last page"
+  class="contact"
+>
+  <div class="contact__grid">
+    <div>
+      <p class="contact__lede">
+        I’m looking for DevOps, cloud and platform engineering work. {profile.availability} Email is the quickest way to reach me.
+      </p>
+
+      <ul class="contact__list">
+        <li>
+          <span class="label">Email</span>
+          <span class="contact__row">
+            <a href={`mailto:${profile.email}`} data-look>{profile.email}</a>
+            <button type="button" class="copy" data-copy={profile.email} data-look hidden>
+              <span class="copy__idle">Copy address</span>
+              <span class="copy__done" aria-hidden="true">Copied</span>
+            </button>
+            <span class="visually-hidden" role="status" data-copy-status></span>
+          </span>
+        </li>
+        <li>
+          <span class="label">LinkedIn</span>
+          <a href={profile.links.linkedin} rel="me" data-look>linkedin.com/in/samihajji</a>
+        </li>
+        <li>
+          <span class="label">GitHub</span>
+          <a href={profile.links.github} rel="me" data-look>github.com/samimassoud</a>
+        </li>
+        <li>
+          <span class="label">CV</span>
+          {cv.exists ? (
+            <a href={cv.href} download={profile.cv.downloadName} type="application/pdf" data-look>Download CV (PDF)</a>
+          ) : (
+            <span class="contact__missing" data-cv-missing>The CV hasn’t been added to the site yet.</span>
+          )}
+        </li>
+      </ul>
+    </div>
+
+    <figure class="contact__sketch" data-draw aria-hidden="true">
+      <svg viewBox="0 0 180 76" data-eyes data-track="focus" focusable="false">
+        <path class="contact__head" d={head} />
+        <Eyes x={70} y={50} gap={36} rx={10} ry={12} seed={31} delay={200} />
+        <rect class="contact__paper" x="0" y="62" width="180" height="14" />
+        <path class="contact__ledge" d={ledge} />
+      </svg>
+      <p class="hand contact__sign">S. H.</p>
+    </figure>
+  </div>
+</Sheet>
+
+<style>
+  .contact {
+    padding-bottom: var(--s-7);
+  }
+
+  .contact__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
+    gap: var(--s-6);
+    align-items: end;
+  }
+
+  .contact__lede {
+    max-width: 34em;
+    font-size: var(--fs-md);
+    line-height: 1.5;
+  }
+
+  .contact__list {
+    list-style: none;
+    display: grid;
+    gap: var(--s-4);
+    margin-top: var(--s-6);
+  }
+
+  .contact__list li {
+    display: grid;
+    grid-template-columns: 6rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--s-3);
+  }
+
+  .contact__list a {
+    justify-self: start;
+    font-family: var(--font-sans);
+    font-size: clamp(1.0625rem, 0.95rem + 0.5vw, 1.3125rem);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .contact__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--s-2) var(--s-4);
+  }
+
+  .copy {
+    position: relative;
+    padding: 0.2rem 0.6rem;
+    font-family: var(--font-sans);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--pencil);
+    border-radius: 4px 7px 5px 6px;
+    cursor: pointer;
+  }
+
+  .copy:hover {
+    background: var(--hl-soft);
+  }
+
+  .copy__done {
+    display: none;
+  }
+
+  .copy.is-copied .copy__idle {
+    display: none;
+  }
+
+  .copy.is-copied .copy__done {
+    display: inline;
+  }
+
+  .contact__missing {
+    font-size: var(--fs-sm);
+    color: var(--pencil);
+  }
+
+  .contact__sketch {
+    justify-self: end;
+    width: min(100%, 14rem);
+  }
+
+  .contact__sketch svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .contact__paper {
+    fill: var(--pad);
+  }
+
+  .contact__head {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+
+  .contact__ledge {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+
+  .contact__sign {
+    margin-top: var(--s-2);
+    text-align: right;
+    font-size: 1.5rem;
+    font-weight: 400;
+  }
+
+  @media (max-width: 47.99rem) {
+    .contact__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .contact__list li {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.1rem;
+    }
+    .contact__sketch {
+      justify-self: start;
+      width: 11rem;
+    }
+  }
+</style>

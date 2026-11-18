@@ -1,0 +1,329 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import TitleBlock from '../sheet/TitleBlock.astro';
+import Correction from '../sketch/Correction.astro';
+import CiliumDiagram from '../diagrams/CiliumDiagram.astro';
+import GitopsDiagram from '../diagrams/GitopsDiagram.astro';
+import AwsDiagram from '../diagrams/AwsDiagram.astro';
+import AzurePlatformDiagram from '../diagrams/AzurePlatformDiagram.astro';
+
+interface Props {
+  entry: CollectionEntry<'projects'>;
+  index: number;
+}
+const { entry, index } = Astro.props;
+const p = entry.data;
+const slug = entry.id;
+const anchor = `project-${slug}`;
+const statusLabel = { complete: 'Complete', 'in-progress': 'In progress', planned: 'Planned, not built' }[p.status];
+const diagramId = `diagram-${slug}`;
+---
+<article class:list={['project', `project--${p.status}`]} id={anchor} aria-labelledby={`${anchor}-title`}>
+  <header class="project__head">
+    <TitleBlock
+      seed={index * 11 + 2}
+      fields={[
+        { label: 'Status', value: statusLabel },
+        { label: 'Period', value: p.period },
+        { label: 'Repository', value: p.repository },
+      ]}
+    />
+    <h3 id={`${anchor}-title`}>{p.title}</h3>
+    <p class="project__summary">{p.summary}</p>
+  </header>
+
+  <div class="project__diagram">
+    {p.diagram === 'cilium' && <CiliumDiagram id={diagramId} caption={p.diagramCaption} callouts={p.callouts} />}
+    {p.diagram === 'gitops' && <GitopsDiagram id={diagramId} caption={p.diagramCaption} callouts={p.callouts} />}
+    {p.diagram === 'aws' && <AwsDiagram id={diagramId} caption={p.diagramCaption} callouts={p.callouts} />}
+    {p.diagram === 'azure-platform' && <AzurePlatformDiagram id={diagramId} caption={p.diagramCaption} />}
+  </div>
+
+  <div class="project__body">
+    <div class="project__why">
+      <h4>Objective</h4>
+      <p>{p.objective}</p>
+      <h4>My role</h4>
+      <p>{p.role}</p>
+    </div>
+    <div class="project__what">
+      <h4>{p.status === 'planned' ? 'What exists so far' : 'What I built'}</h4>
+      <ul class="ticks">
+        {p.built.map((b) => <li>{b}</li>)}
+      </ul>
+    </div>
+  </div>
+
+  {p.correction && <Correction struck={p.correction.struck} note={p.correction.note} />}
+
+  <details class="project__more">
+    <summary>
+      <span class="project__more-label">{p.status === 'planned' ? 'Design decisions and open questions' : 'Decisions, findings and limits'}</span>
+      <span class="project__more-hint hand" aria-hidden="true">open</span>
+    </summary>
+    <div class="project__more-body">
+      <section>
+        <h4>Decisions and trade-offs</h4>
+        <dl class="decisions">
+          {p.decisions.map((d) => (
+            <div>
+              <dt>{d.title}</dt>
+              <dd>{d.text}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+      <section>
+        <h4>{p.status === 'planned' ? 'Carried over from Phase 1' : 'What it showed'}</h4>
+        <ul class="ticks">
+          {p.learned.map((l) => <li>{l}</li>)}
+        </ul>
+        {p.caveats.length > 0 && (
+          <>
+            <h4>Limits, stated plainly</h4>
+            <ul class="ticks ticks--pencil">
+              {p.caveats.map((c) => <li>{c}</li>)}
+            </ul>
+          </>
+        )}
+      </section>
+    </div>
+  </details>
+
+  <footer class="project__foot">
+    <p class="project__stack"><span class="label">Stack</span> {p.stack.join(', ')}</p>
+    <ul class="project__links">
+      {p.links.map((l) => (
+        <li><a href={l.href}>{l.label}<span class="visually-hidden"> for {p.title}</span></a></li>
+      ))}
+    </ul>
+  </footer>
+</article>
+
+<style>
+  .project {
+    position: relative;
+    padding-block: var(--s-6) var(--s-8);
+  }
+
+  .project:first-of-type {
+    padding-top: 0;
+  }
+
+  .project__head h3 {
+    margin-top: var(--s-5);
+    max-width: 26ch;
+    font-size: clamp(1.625rem, 1.2rem + 1.5vw, 2.25rem);
+  }
+
+  .project__summary {
+    margin-top: var(--s-3);
+    max-width: var(--measure);
+    font-size: var(--fs-md);
+    line-height: 1.5;
+  }
+
+  .project__diagram {
+    margin-top: var(--s-6);
+  }
+
+  .project__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: var(--s-5) var(--s-7);
+    margin-top: var(--s-7);
+  }
+
+  .project__body h4,
+  .project__more-body h4 {
+    margin-bottom: var(--s-2);
+  }
+
+  .project__body p + h4,
+  .project__more-body ul + h4 {
+    margin-top: var(--s-5);
+  }
+
+  .project__body p {
+    max-width: 40em;
+  }
+
+  .ticks {
+    list-style: none;
+    display: grid;
+    gap: var(--s-3);
+  }
+
+  .ticks li {
+    position: relative;
+    padding-left: 1.6rem;
+  }
+
+  .ticks li::before {
+    /* a quick pencil tick */
+    content: '';
+    position: absolute;
+    left: 0.1rem;
+    top: 0.5em;
+    width: 0.95rem;
+    height: 0.7rem;
+    background: var(--img-tick) no-repeat center / contain;
+  }
+
+  .ticks--pencil li::before {
+    background: none;
+    border-top: 1.5px dotted var(--pencil);
+    height: 0;
+    top: 0.8em;
+    width: 0.9rem;
+  }
+
+  .project--planned .project__what .ticks li::before {
+    filter: grayscale(1) opacity(0.7);
+  }
+
+  /* Progressive disclosure: native details, animated where supported */
+  .project__more {
+    margin-top: var(--s-6);
+    border-top: 1px dashed var(--rule);
+    border-bottom: 1px dashed var(--rule);
+    interpolate-size: allow-keywords;
+  }
+
+  .project__more summary {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-3);
+    padding-block: var(--s-4);
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-sans);
+    font-weight: 650;
+    font-size: var(--fs-base);
+    color: var(--ink);
+  }
+
+  .project__more summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .project__more summary::before {
+    content: '';
+    flex: none;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-right: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    transform: translateY(-0.1rem) rotate(-45deg);
+    transition: transform 200ms var(--ease-out);
+  }
+
+  .project__more[open] summary::before {
+    transform: translateY(-0.25rem) rotate(45deg);
+  }
+
+  .project__more summary:hover .project__more-label {
+    background: linear-gradient(transparent 55%, var(--hl-strong) 55%);
+  }
+
+  .project__more-hint {
+    font-size: 1rem;
+    color: var(--pencil);
+  }
+
+  .project__more[open] .project__more-hint {
+    visibility: hidden;
+  }
+
+  .project__more::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size 380ms var(--ease-out),
+      content-visibility 380ms allow-discrete;
+  }
+
+  .project__more[open]::details-content {
+    block-size: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .project__more::details-content {
+      transition: none;
+    }
+  }
+
+  .project__more-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: var(--s-5) var(--s-7);
+    padding-block: var(--s-3) var(--s-6);
+  }
+
+  .project__more-body h4 {
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    color: var(--pencil);
+    margin-bottom: var(--s-3);
+    padding-bottom: var(--s-1);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .decisions {
+    display: grid;
+    gap: var(--s-4);
+  }
+
+  .decisions dt {
+    font-family: var(--font-sans);
+    font-weight: 650;
+    font-size: var(--fs-base);
+    color: var(--graphite);
+  }
+
+  .decisions dd {
+    margin: var(--s-1) 0 0;
+  }
+
+  .project__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-3) var(--s-6);
+    margin-top: var(--s-5);
+  }
+
+  .project__stack {
+    max-width: 44rem;
+    font-family: var(--font-sans);
+    font-size: var(--fs-sm);
+    color: var(--graphite);
+  }
+
+  .project__stack .label {
+    margin-right: 0.4em;
+  }
+
+  .project__links {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-5);
+    font-family: var(--font-sans);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+  }
+
+  /* Planned work is drawn in pencil, all the way through. */
+  .project--planned .project__head h3 {
+    color: var(--pencil);
+  }
+
+  @media (max-width: 56rem) {
+    .project__body,
+    .project__more-body {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

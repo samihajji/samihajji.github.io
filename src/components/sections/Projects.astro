@@ -1,0 +1,56 @@
+---
+import { getCollection } from 'astro:content';
+import Sheet from '../sheet/Sheet.astro';
+import ProjectEntry from './ProjectEntry.astro';
+import DraftBreak from '../sheet/DraftBreak.astro';
+
+interface Props {
+  number: number;
+  total: number;
+}
+const { number, total } = Astro.props;
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const count = (s: string) => projects.filter((p) => p.data.status === s).length;
+---
+<Sheet
+  id="projects"
+  number={number}
+  total={total}
+  subject="Selected engineering projects"
+  fields={[
+    { label: 'Entries', value: `${count('complete')} complete, ${count('in-progress') + count('planned')} planned` },
+    { label: 'Covers', value: 'Dec 2025 – now' },
+  ]}
+  title="Systems I built and investigated"
+  intro="Four projects, each with a drawing, the decisions behind it and what it taught me. Everything links to its public repository, and anything unfinished is marked as unfinished."
+>
+  <Fragment slot="head">
+    <ul class="legend" aria-label="How status is drawn">
+      <li class="status status--complete">Inked: complete</li>
+      <li class="status status--in-progress">Pencilled: in progress</li>
+      <li class="status status--planned">Dotted: planned</li>
+    </ul>
+  </Fragment>
+
+  {projects.map((entry, i) => (
+    <>
+      {i > 0 && <DraftBreak label={`project ${i + 1} of ${projects.length}`} seed={i * 5 + 1} />}
+      <ProjectEntry entry={entry} index={i} />
+    </>
+  ))}
+</Sheet>
+
+<style>
+  .legend {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-5);
+    margin-top: var(--s-5);
+  }
+
+  .legend .status {
+    font-weight: 500;
+    color: var(--pencil);
+  }
+</style>

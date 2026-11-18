@@ -1,0 +1,47 @@
+---
+/**
+ * One sheet of the pad. Each sheet shares the page's margin column, carries
+ * a numbered marker on the chapter line, and opens with a title block.
+ */
+import TitleBlock from './TitleBlock.astro';
+import { loop } from '../../lib/sketch';
+
+interface Field {
+  label: string;
+  value: string;
+}
+interface Props {
+  id: string;
+  number: number;
+  total: number;
+  subject: string;
+  fields?: Field[];
+  title?: string;
+  intro?: string;
+  class?: string;
+}
+const { id, number, total, subject, fields = [], title, intro, class: className } = Astro.props;
+const block: Field[] = [{ label: 'Sheet', value: `${number} of ${total}` }, { label: 'Subject', value: subject }, ...fields];
+const ring = loop(20, 20, 15, 15, number * 13 + 5);
+---
+<section class:list={['sheet', className]} id={id} aria-labelledby={title ? `${id}-title` : undefined}>
+  <div class="sheet__margin">
+    <span class="marker" aria-hidden="true" data-draw>
+      <svg viewBox="0 0 40 40">
+        <circle class="marker__fill" cx="20" cy="20" r="15" />
+        <path class="marker__ring draw" d={ring} pathLength="1" style="--dur: 700ms" />
+      </svg>
+      <span class="marker__n">{number}</span>
+    </span>
+    <slot name="margin" />
+  </div>
+  <div class="sheet__body">
+    <header class="sheet__head">
+      <TitleBlock fields={block} seed={number * 7} />
+      {title && <h2 id={`${id}-title`}>{title}</h2>}
+      {intro && <p class="sheet__intro">{intro}</p>}
+      <slot name="head" />
+    </header>
+    <slot />
+  </div>
+</section>

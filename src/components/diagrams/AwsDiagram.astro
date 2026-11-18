@@ -1,0 +1,130 @@
+---
+/**
+ * image-processor-demo: redrawn from the owner's own architecture diagram
+ * and checked against modules/frontend, modules/backend, infra/global and
+ * the workflows in app/ and infra/.
+ */
+import DiagramFigure from './DiagramFigure.astro';
+import { box, line, arrow, curve, arrowHead, loop } from '../../lib/sketch';
+
+interface Props {
+  id: string;
+  caption: string;
+  callouts: { id: string; label: string; text: string }[];
+}
+const { id, caption, callouts } = Astro.props;
+
+const W = 600, H = 480;
+const positions = {
+  https: [78, 88],
+  oac: [190, 168],
+  header: [262, 86],
+  throttle: [432, 82],
+  promote: [210, 312],
+  oidc: [588, 266],
+  modules: [588, 390],
+} as const;
+
+const b = (x: number, y: number, w: number, h: number, s: number) => box(x, y, w, h, s, { overshoot: 2.5, bow: 1 });
+const hl = (a: readonly [number, number], z: readonly [number, number]) => line(a, z, 55, { bow: 1.5 });
+const toSite = curve([[62, 314], [84, 282], [128, 250]], 0.7);
+const toArtifacts = curve([[176, 314], [236, 276], [318, 244]], 0.7);
+const toInfra = curve([[196, 344], [212, 372], [236, 394]], 0.7);
+---
+<DiagramFigure
+  id={id}
+  width={W}
+  height={H}
+  title="Diagram of the AWS image processor: viewers reach CloudFront over HTTPS; CloudFront serves the site from a private S3 bucket through Origin Access Control and sends /api/* to API Gateway with a verification header; API Gateway invokes a Python Lambda that checks the header and logs to CloudWatch; the Lambda's code comes from an artifacts bucket. Below, in the GitHub organization, the app repository's frontend and backend workflows publish the site and the Lambda build, the backend workflow commits the new version to the infra repository, whose Terraform workflow applies it using modules pinned by tag; every workflow authenticates to AWS with OIDC."
+  caption={caption}
+  callouts={callouts}
+  positions={positions}
+>
+  <g data-part="https"><path class="hl" d={hl([58, 112], [100, 112])} pathLength="1" stroke-width="26" /></g>
+  <g data-part="oac"><path class="hl" d={hl([165, 142], [165, 192])} pathLength="1" stroke-width="24" /></g>
+  <g data-part="header"><path class="hl" d={hl([232, 112], [290, 112])} pathLength="1" stroke-width="24" /></g>
+  <g data-part="throttle"><path class="hl" d={hl([304, 121], [378, 121])} pathLength="1" stroke-width="16" /></g>
+  <g data-part="promote"><path class="hl" d={hl([122, 330], [196, 330])} pathLength="1" stroke-width="26" /></g>
+  <g data-part="oidc"><path class="hl" d={hl([408, 283], [578, 283])} pathLength="1" stroke-width="26" /></g>
+  <g data-part="modules"><path class="hl" d={hl([426, 416], [578, 416])} pathLength="1" stroke-width="34" /></g>
+
+  <!-- request path -->
+  <path class="ink" d={loop(32, 94, 8, 8, 1)} />
+  <path class="ink" d="M18 124 C 20 107, 44 107, 46 124" />
+  <text class="t-small" x="10" y="144">viewers</text>
+  <path class="ink-thin" d={arrow([58, 112], [100, 112], 3, { head: 7 })} />
+  <text class="t-small" x="56" y="132">HTTPS</text>
+
+  <path class="ink" d={b(104, 86, 122, 52, 5)} />
+  <text x="118" y="117">CloudFront</text>
+
+  <path class="ink-thin" d={arrow([165, 140], [165, 192], 7, { head: 7 })} />
+  <text class="t-small" x="128" y="170">OAC</text>
+  <path class="ink" d={b(104, 196, 122, 50, 9)} />
+  <text x="116" y="218">S3: site</text>
+  <text class="t-small" x="116" y="235">private bucket</text>
+
+  <path class="ink-thin" d={arrow([228, 112], [292, 112], 11, { head: 7 })} />
+  <text class="t-mono" x="236" y="132">/api/*</text>
+  <path class="ink" d={b(296, 86, 134, 52, 13)} />
+  <text x="308" y="108">API Gateway</text>
+  <text class="t-small" x="308" y="126">throttled</text>
+
+  <path class="ink-thin" d={arrow([432, 112], [462, 112], 15, { head: 7 })} />
+  <path class="ink" d={b(466, 86, 118, 52, 17)} />
+  <text x="478" y="108">Lambda</text>
+  <text class="t-small" x="478" y="126">checks header</text>
+
+  <path class="ink" d={b(296, 196, 134, 44, 19)} />
+  <text x="306" y="218" style="font-size: 14px">S3: artifacts</text>
+  <text class="t-small" x="306" y="233">zip by SHA</text>
+  <path class="ink-thin" d={arrow([420, 196], [482, 142], 21, { head: 6 })} />
+  <text class="t-small" x="446" y="186">code</text>
+
+  <path class="pencil" d={b(466, 196, 118, 40, 23)} />
+  <text class="t-pencil" x="472" y="221" style="font-size: 13px">CloudWatch Logs</text>
+  <path class="pencil" d={arrow([546, 140], [546, 192], 25, { head: 6 })} />
+
+  <!-- the boundary: OIDC is how GitHub crosses it -->
+  <path class="pencil-dash" d={line([16, 283], [584, 283], 29, { bow: 1 })} />
+  <text class="t-hand" x="16" y="34">AWS account</text>
+  <text class="t-hand" x="16" y="470">GitHub organization</text>
+  <rect class="fill-paper" x="404" y="268" width="180" height="30" />
+  <path class="ink" d={b(404, 268, 180, 30, 31)} />
+  <text x="414" y="288" style="font-size: 14px">OIDC: no stored keys</text>
+
+  <!-- workflows -->
+  <path class="ink" d={b(16, 316, 92, 28, 33)} />
+  <text class="t-mono" x="22" y="335">frontend-cd</text>
+  <path class="ink" d={b(116, 316, 84, 28, 35)} />
+  <text class="t-mono" x="122" y="335">backend-cd</text>
+  <path class="ink" d={b(230, 316, 140, 28, 37)} />
+  <text class="t-mono" x="238" y="335">terraform-dev-cd</text>
+
+  <path class="ink-dash" d={toSite} />
+  <path class="ink-thin" d={arrowHead([128, 250], -0.62, 7, 39)} />
+  <path class="ink-dash" d={toArtifacts} />
+  <path class="ink-thin" d={arrowHead([318, 244], -0.36, 7, 41)} />
+  <path class="ink-thin" d={arrow([354, 316], [354, 290], 43, { head: 6 })} />
+  <text class="t-small" x="362" y="308">plan, apply</text>
+
+  <path class="ink-dash" d={toInfra} />
+  <path class="ink-thin" d={arrowHead([238, 395], 0.75, 6, 45)} />
+  <text class="t-small" x="98" y="378">commits version</text>
+
+  <!-- repositories -->
+  <path class="ink" d={b(16, 394, 184, 48, 47)} />
+  <text x="28" y="417">app</text>
+  <text class="t-small" x="28" y="433">React, Python Lambda</text>
+  <path class="ink-thin" d={line([62, 394], [62, 346], 49)} />
+  <path class="ink-thin" d={line([158, 394], [158, 346], 50)} />
+  <path class="ink" d={b(230, 394, 160, 48, 51)} />
+  <text x="242" y="417">infra</text>
+  <text class="t-small" x="242" y="433">live environments</text>
+  <path class="ink-thin" d={line([300, 394], [300, 346], 53)} />
+  <path class="ink" d={b(420, 394, 164, 48, 54)} />
+  <text x="432" y="417">modules</text>
+  <text class="t-small" x="432" y="433">tags v0.1.0 to v0.3.16</text>
+  <path class="ink-thin" d={arrow([418, 418], [394, 418], 56, { head: 6 })} />
+  <text class="t-mono" x="300" y="468">?ref=v0.3.16</text>
+</DiagramFigure>

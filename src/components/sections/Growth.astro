@@ -1,0 +1,293 @@
+---
+/**
+ * The trajectory: an ascending pencil curve through dated milestones. It is
+ * inked where the work is done, pencilled where it is happening now, and
+ * dotted where it is planned. It draws once when it comes into view.
+ */
+import Sheet from '../sheet/Sheet.astro';
+import { milestones, chapters } from '../../data/growth';
+import { curve, rng, type Pt } from '../../lib/sketch';
+
+interface Props {
+  number: number;
+  total: number;
+}
+const { number, total } = Astro.props;
+
+const W = 1000, H = 400;
+const r = rng(19);
+const n = milestones.length;
+const pts: Pt[] = milestones.map((_, i) => {
+  const t = i / (n - 1);
+  const x = 40 + t * (W - 80);
+  // An organic climb: slow start, steady middle, still rising at the end.
+  const y = H - 70 - (H - 110) * (0.25 * t + 0.75 * t ** 1.35) + (r() - 0.5) * 10;
+  return [x, y] as const;
+});
+
+const lastDone = milestones.map((m) => m.state).lastIndexOf('done');
+const lastNow = milestones.map((m) => m.state).lastIndexOf('now');
+const inkPath = curve(pts.slice(0, lastDone + 1), 0.6);
+const pencilPath = curve(pts.slice(lastDone, lastNow + 1), 0.6);
+const dottedPath = curve(pts.slice(lastNow), 0.6);
+const pct = (p: Pt) => ({ left: `${((p[0] / W) * 100).toFixed(2)}%`, top: `${((p[1] / H) * 100).toFixed(2)}%` });
+---
+<Sheet
+  id="trajectory"
+  number={number}
+  total={total}
+  subject="Professional growth and interests"
+  fields={[{ label: 'Covers', value: 'Jul 2025 – next' }]}
+  title="Direction, not percentages"
+  intro="Where my attention has gone, in order. The line is inked where the work is done and pencilled where it’s still ahead."
+>
+  <figure class="growth" data-draw>
+    <div class="growth__plot">
+      <svg class="growth__svg" viewBox={`0 0 ${W} ${H}`} aria-hidden="true" focusable="false" preserveAspectRatio="none">
+        <path class="growth__ink draw" d={inkPath} pathLength="1" style="--dur: 2200ms; --d: 150ms" />
+        <path class="growth__pencil draw" d={pencilPath} pathLength="1" style="--dur: 500ms; --d: 2350ms" />
+        <path class="growth__dotted appear" d={dottedPath} style="--d: 2800ms" />
+      </svg>
+      <ol class="growth__points">
+        {milestones.map((m, i) => (
+          <li
+            class:list={['point', `point--${m.state}`, i === n - 1 ? 'point--above' : 'point--below', 'appear']}
+            style={`left: ${pct(pts[i]!).left}; top: ${pct(pts[i]!).top}; --d: ${200 + Math.round((i / (n - 1)) * 2400)}ms`}
+          >
+            <span class="point__dot" aria-hidden="true"></span>
+            <span class="point__text">
+              <span class="point__date hand">{m.date}</span>
+              <span class="point__label">{m.label}</span>
+              {m.state !== 'done' && <span class="visually-hidden"> ({m.state === 'now' ? 'next step' : 'planned'})</span>}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+    <figcaption class="visually-hidden">Milestones from July 2025 to the planned next steps, rising over time.</figcaption>
+  </figure>
+
+  <ol class="chapters">
+    {chapters.map((c) => (
+      <li class:list={['chapter', `chapter--${c.state}`]}>
+        <h3>{c.name}</h3>
+        <p class="chapter__period hand">{c.period}</p>
+        <p>{c.text}</p>
+      </li>
+    ))}
+  </ol>
+</Sheet>
+
+<style>
+  .growth__plot {
+    position: relative;
+    aspect-ratio: 1000 / 400;
+    margin-block: var(--s-6) var(--s-8);
+    container-type: inline-size;
+  }
+
+  .growth__svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .growth__svg path {
+    fill: none;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .growth__ink {
+    stroke: var(--ink);
+    stroke-width: 2.4;
+  }
+
+  .growth__pencil {
+    stroke: var(--pencil);
+    stroke-width: 1.6;
+  }
+
+  .growth__dotted {
+    stroke: var(--pencil);
+    stroke-width: 1.6;
+    stroke-dasharray: 2 6;
+  }
+
+  /* vector-effect breaks pathLength-based dashing in some engines, so the
+     animated strokes rely on the normal (scaled) stroke instead. */
+  :global(html.motion) .growth__ink,
+  :global(html.motion) .growth__pencil {
+    vector-effect: none;
+  }
+
+  .growth__points {
+    list-style: none;
+  }
+
+  .point {
+    position: absolute;
+    width: 0;
+    height: 0;
+  }
+
+  .point__dot {
+    position: absolute;
+    left: -6px;
+    top: -6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--ink);
+    box-shadow: 0 0 0 3px var(--pad);
+  }
+
+  .point--now .point__dot {
+    background: var(--pad);
+    border: 2px solid var(--pencil);
+  }
+
+  .point--next .point__dot {
+    background: var(--pad);
+    border: 2px dotted var(--pencil);
+  }
+
+  .point__text {
+    position: absolute;
+    left: -0.4rem;
+    /* one slot between neighbouring points, so labels never collide */
+    width: calc(9.2cqw - 0.5rem);
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .point--below .point__text {
+    top: 0.9rem;
+  }
+
+  .point--above .point__text {
+    bottom: 0.9rem;
+  }
+
+  .point__date {
+    font-size: 1rem;
+    line-height: 1.1;
+  }
+
+  .point__label {
+    font-family: var(--font-sans);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--graphite);
+  }
+
+  .point--now .point__label,
+  .point--next .point__label,
+  .point--now .point__date,
+  .point--next .point__date {
+    color: var(--pencil);
+  }
+
+  /* The last label sits above the end of the line and extends leftwards. */
+  .point:last-child .point__text {
+    width: 11rem;
+    left: auto;
+    right: -0.4rem;
+    text-align: right;
+  }
+
+  .chapters {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-6) var(--s-6);
+  }
+
+  .chapter {
+    position: relative;
+    padding-top: var(--s-4);
+    border-top: 2px solid var(--ink);
+    font-size: var(--fs-sm);
+  }
+
+  .chapter--now {
+    border-top: 1.5px solid var(--pencil);
+  }
+
+  .chapter--next {
+    border-top: 2px dotted var(--pencil);
+  }
+
+  .chapter h3 {
+    font-size: var(--fs-base);
+  }
+
+  .chapter__period {
+    margin-top: 0.1rem;
+    font-size: 1rem;
+  }
+
+  .chapter p:last-child {
+    margin-top: var(--s-2);
+  }
+
+  @media (max-width: 62rem) {
+    .chapters {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* Narrow screens: the curve turns into a climbing list, read top to bottom. */
+  @media (max-width: 47.99rem) {
+    .growth__plot {
+      aspect-ratio: auto;
+      margin-block: var(--s-5) var(--s-7);
+    }
+
+    .growth__svg {
+      display: none;
+    }
+
+    .growth__points {
+      position: relative;
+      display: grid;
+      gap: var(--s-4);
+      padding-left: 1.75rem;
+    }
+
+    .growth__points::before {
+      content: '';
+      position: absolute;
+      left: 0.4rem;
+      top: 0.5rem;
+      bottom: 0.5rem;
+      border-left: 2px solid var(--ink);
+    }
+
+    .point {
+      position: relative;
+      left: auto !important;
+      top: auto !important;
+      width: auto;
+      height: auto;
+    }
+
+    .point__dot {
+      left: -1.6rem;
+      top: 0.35rem;
+    }
+
+    .point__text,
+    .point:last-child .point__text {
+      position: static;
+      width: auto;
+      text-align: left;
+    }
+
+    .chapters {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

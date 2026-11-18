@@ -1,0 +1,168 @@
+---
+import Sheet from '../sheet/Sheet.astro';
+import { skills, sources } from '../../data/skills';
+
+interface Props {
+  number: number;
+  total: number;
+}
+const { number, total } = Astro.props;
+const partCount = skills.reduce((n, g) => n + g.parts.length, 0);
+---
+<Sheet
+  id="skills"
+  number={number}
+  total={total}
+  subject="Skills"
+  fields={[{ label: 'Parts listed', value: String(partCount) }]}
+  title="Skills, as a bill of materials"
+  intro="What I can discuss in depth in an interview, and where I used each one. No ratings: follow a link to see the work."
+>
+  <table class="bom">
+    <caption class="visually-hidden">Technologies, what I have done with them, and where</caption>
+    <thead>
+      <tr>
+        <th scope="col">Part</th>
+        <th scope="col">What I’ve done with it</th>
+        <th scope="col">Where</th>
+      </tr>
+    </thead>
+    {skills.map((group) => (
+      <tbody>
+        <tr class="bom__group">
+          <th scope="rowgroup" colspan="3">{group.name}</th>
+        </tr>
+        {group.parts.map((part) => (
+          <tr class:list={{ 'bom__row--learning': part.learning }}>
+            <th scope="row">
+              {part.name}
+              {part.learning && <span class="bom__learning hand">learning</span>}
+            </th>
+            <td>{part.detail}</td>
+            <td>
+              <ul class="bom__where">
+                {part.where.map((k) => (
+                  <li><a href={sources[k].href}>{sources[k].label}</a></li>
+                ))}
+              </ul>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    ))}
+  </table>
+</Sheet>
+
+<style>
+  .bom {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-sm);
+    line-height: 1.5;
+  }
+
+  .bom thead th {
+    text-align: left;
+    font-family: var(--font-sans);
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    color: var(--pencil);
+    padding: 0 var(--s-4) var(--s-2) 0;
+    border-bottom: 1.5px solid var(--graphite);
+  }
+
+  .bom__group th {
+    padding: var(--s-6) 0 var(--s-2);
+    text-align: left;
+    font-family: var(--font-sans);
+    font-size: var(--fs-base);
+    font-weight: 700;
+    color: var(--ink);
+    border-bottom: 1px solid var(--rule-strong);
+  }
+
+  .bom tbody tr:not(.bom__group) > * {
+    padding: var(--s-3) var(--s-4) var(--s-3) 0;
+    border-bottom: 1px dashed var(--rule);
+    vertical-align: top;
+    text-align: left;
+  }
+
+  .bom tbody th[scope='row'] {
+    width: 24%;
+    font-family: var(--font-sans);
+    font-weight: 650;
+    color: var(--graphite);
+  }
+
+  .bom td:last-child {
+    width: 26%;
+    padding-right: 0;
+  }
+
+  .bom__where {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.1rem 0.9rem;
+    font-family: var(--font-sans);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+  }
+
+  .bom__where a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+  }
+
+  .bom__row--learning th,
+  .bom__row--learning td {
+    color: var(--pencil);
+  }
+
+  .bom__learning {
+    display: inline-block;
+    margin-left: 0.5em;
+    font-size: 1rem;
+    font-weight: 400;
+    transform: rotate(-3deg);
+  }
+
+  @media (max-width: 47.99rem) {
+    .bom,
+    .bom tbody,
+    .bom tr,
+    .bom th,
+    .bom td {
+      display: block;
+      width: 100% !important;
+    }
+
+    .bom thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    .bom tbody tr:not(.bom__group) {
+      padding: var(--s-3) 0;
+      border-bottom: 1px dashed var(--rule);
+    }
+
+    .bom tbody tr:not(.bom__group) > * {
+      padding: 0;
+      border: 0;
+    }
+
+    .bom tbody td {
+      margin-top: var(--s-1);
+    }
+
+    .bom__where {
+      margin-top: var(--s-1);
+    }
+  }
+</style>

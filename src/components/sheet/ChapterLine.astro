@@ -1,0 +1,20 @@
+---
+/**
+ * The line that runs down the margin and links the chapters. Without
+ * scroll-driven animation support (or with reduced motion) it is simply
+ * drawn in full; otherwise the ink is revealed as the reader moves down.
+ */
+import { wavyVertical } from '../../lib/sketch';
+
+const d = wavyVertical(6, 0, 1000, 1.8, 41);
+---
+<div class="chapter-line" aria-hidden="true">
+  <svg class="chapter-line__ghost" viewBox="0 0 12 1000" preserveAspectRatio="none" focusable="false">
+    <path d={d} vector-effect="non-scaling-stroke" />
+  </svg>
+  <div class="chapter-line__ink">
+    <svg viewBox="0 0 12 1000" preserveAspectRatio="none" focusable="false">
+      <path d={d} vector-effect="non-scaling-stroke" />
+    </svg>
+  </div>
+</div>

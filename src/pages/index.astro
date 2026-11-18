@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/sheet/SiteHeader.astro';
+import ChapterLine from '../components/sheet/ChapterLine.astro';
+import Hero from '../components/sections/Hero.astro';
+import Projects from '../components/sections/Projects.astro';
+import Skills from '../components/sections/Skills.astro';
+import SheetBreak from '../components/sheet/SheetBreak.astro';
+import Growth from '../components/sections/Growth.astro';
+import Experience from '../components/sections/Experience.astro';
+import Contact from '../components/sections/Contact.astro';
+import { profile } from '../data/profile';
+
+const sheets = [
+  { id: 'projects', label: 'Projects' },
+  { id: 'skills', label: 'Skills' },
+  { id: 'trajectory', label: 'Trajectory' },
+  { id: 'log', label: 'Log' },
+  { id: 'contact', label: 'Contact' },
+];
+const total = sheets.length + 1;
+---
+<BaseLayout>
+  <div class="page">
+    <SiteHeader sheets={sheets} />
+    <main id="main" class="sheets">
+      <ChapterLine />
+      <Hero total={total} />
+      <SheetBreak seed={1} />
+      <Projects number={2} total={total} />
+      <SheetBreak seed={2} />
+      <Skills number={3} total={total} />
+      <SheetBreak seed={3} />
+      <Growth number={4} total={total} />
+      <SheetBreak seed={4} />
+      <Experience number={5} total={total} />
+      <SheetBreak seed={5} />
+      <Contact number={6} total={total} />
+    </main>
+    <footer class="site-footer">
+      <p>© 2026 {profile.name}. Hand-drawn SVG on a static Astro site. No trackers, no cookies.</p>
+    </footer>
+  </div>
+</BaseLayout>

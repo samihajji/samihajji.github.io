@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/paths';
+---
+<BaseLayout title="Page not found, Sami Hajji" noindex>
+  <main id="main" class="page notfound">
+    <p class="hand">sheet missing from the pad</p>
+    <h1>This page doesn’t exist.</h1>
+    <p>The address may be mistyped, or the page moved. Everything on this site is on one page.</p>
+    <p><a class="btn btn--ink" href={withBase('/')}>Go to the portfolio</a></p>
+  </main>
+</BaseLayout>
+
+<style>
+  .notfound {
+    min-height: 80vh;
+    display: grid;
+    align-content: center;
+    gap: var(--s-4);
+    padding-left: calc(var(--margin) + 0px);
+  }
+  .notfound .hand {
+    font-size: 1.4rem;
+  }
+  .notfound h1 {
+    font-size: var(--fs-xl);
+  }
+</style>

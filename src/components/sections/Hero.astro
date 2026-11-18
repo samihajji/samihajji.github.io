@@ -1,0 +1,289 @@
+---
+import Sheet from '../sheet/Sheet.astro';
+import Eyes from '../sketch/Eyes.astro';
+import { profile } from '../../data/profile';
+import { cvInfo } from '../../lib/paths';
+import { box, line, hatch, arrowHead, curve } from '../../lib/sketch';
+
+interface Props {
+  total: number;
+}
+const { total } = Astro.props;
+const cv = cvInfo();
+
+// The cutaway node: four layers, from the application down to the kernel.
+const X = 24, Y = 112, W = 262, H = 336;
+const layers = [
+  { y: Y, label: 'application' },
+  { y: 192, label: 'pods and containers' },
+  { y: 272, label: 'kubelet, CNI, Services' },
+  { y: 352, label: 'Linux: netns, veth, eBPF' },
+];
+const frameStrokes = [
+  line([X, Y], [X + W, Y], 2, { overshoot: 4 }),
+  line([X + W, Y], [X + W, Y + H], 3, { overshoot: 4 }),
+  line([X + W, Y + H], [X, Y + H], 4, { overshoot: 4 }),
+  line([X, Y + H], [X, Y], 5, { overshoot: 4 }),
+];
+const dividers = layers.slice(1).map((l, i) => line([X + 2, l.y], [X + W - 2, l.y], 30 + i, { bow: 1.2 }));
+const hatching = hatch(X + 2, 400, W - 4, Y + H - 402, 9, 50);
+const pods = [box(196, 208, 30, 28, 61, { overshoot: 2 }), box(234, 208, 30, 28, 63, { overshoot: 2 })];
+const veth = curve([[211, 236], [212, 280], [230, 298], [249, 280], [249, 236]], 0.6);
+const trace = [line([274, 140], [274, 418], 70, { bow: 2.4 })];
+const traceHead = arrowHead([274, 420], Math.PI / 2, 8, 72);
+const head = 'M92 113 C 90 62, 118 38, 154 38 C 190 38, 218 62, 216 113';
+const fingersL = 'M72 113 q5.5 -13 11 0 q5.5 -14 11 0 q5.5 -13 11 0';
+const fingersR = 'M203 113 q5.5 -13 11 0 q5.5 -14 11 0 q5.5 -13 11 0';
+const noteArrow = curve([[338, 384], [322, 410], [296, 424]], 0.8);
+const noteHead = arrowHead([294, 425], Math.PI * 0.93, 8, 81);
+---
+<Sheet
+  id="top"
+  number={1}
+  total={total}
+  subject="Introduction"
+  fields={[
+    { label: 'Location', value: profile.location },
+    { label: 'Updated', value: profile.updated },
+  ]}
+  class="hero"
+>
+  <div class="hero__grid">
+    <div class="hero__text">
+      <h1 class="hero__name">{profile.name}</h1>
+      <p class="hero__title">{profile.title}</p>
+      <p class="hero__lede">{profile.lede}</p>
+
+      <div class="hero__actions">
+        {cv.exists ? (
+          <a class="btn btn--ink" href={cv.href} download={profile.cv.downloadName} type="application/pdf">
+            <svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.2v10M5.6 9.3l4.4 4.4 4.3-4.5M4 16.6h12" /></svg>
+            Download CV <span class="visually-hidden">(PDF)</span>
+          </a>
+        ) : (
+          <a class="btn btn--ink" aria-disabled="true" role="link" data-cv-missing>
+            CV not added yet
+          </a>
+        )}
+        <a class="btn btn--pencil" href="#contact">Contact me</a>
+      </div>
+
+      <ul class="hero__links" aria-label="Elsewhere">
+        <li><span class="label">GitHub</span> <a href={profile.links.github} rel="me">github.com/samimassoud</a></li>
+        <li><span class="label">LinkedIn</span> <a href={profile.links.linkedin} rel="me">linkedin.com/in/samihajji</a></li>
+        <li class="hero__avail">{profile.availability}</li>
+      </ul>
+    </div>
+
+    <figure class="hero__figure" data-draw>
+      <svg
+        class="sketch hero__svg"
+        viewBox="0 0 430 470"
+        role="img"
+        aria-label="A pair of eyes peering over a cutaway of a Kubernetes node, from the application at the top down to the Linux kernel at the bottom."
+        data-eyes
+        data-track="pointer"
+      >
+
+        <path class="ink-soft draw" d={head} pathLength="1" style="--d: 650ms; --dur: 520ms" />
+        <Eyes x={134} y={82} gap={40} delay={1050} />
+
+        <rect class="paper" x={X} y={Y} width={W} height={H} />
+        {frameStrokes.map((d, i) => (
+          <path class="ink draw" d={d} pathLength="1" style={`--d: ${i * 140}ms; --dur: 380ms`} />
+        ))}
+        <path class="ink-soft draw" d={fingersL} pathLength="1" style="--d: 900ms; --dur: 260ms" />
+        <path class="ink-soft draw" d={fingersR} pathLength="1" style="--d: 960ms; --dur: 260ms" />
+
+        {dividers.map((d, i) => (
+          <path class="pencil draw" d={d} pathLength="1" style={`--d: ${560 + i * 90}ms; --dur: 340ms`} />
+        ))}
+        {layers.map((l, i) => (
+          <text class="layer-label appear" x={X + 14} y={l.y + 26} style={`--d: ${700 + i * 90}ms`}>{l.label}</text>
+        ))}
+
+        <text class="mono-label appear" x={X + 14} y={168} style="--d: 820ms">GET /api/v1/jobs</text>
+        {pods.map((d) => <path class="pencil appear" d={d} style="--d: 880ms" />)}
+        <path class="pencil appear" d={veth} style="--d: 940ms" />
+        <text class="tiny-label appear" x={218} y={318} style="--d: 960ms">veth</text>
+        <path class="hatching appear" d={hatching} style="--d: 1000ms" />
+
+        {trace.map((d) => <path class="trace appear" d={d} style="--d: 1350ms" />)}
+        <path class="trace-head appear" d={traceHead} style="--d: 1900ms" />
+
+        <g class="appear" style="--d: 1700ms">
+          <text class="note" x="300" y="318">the interesting</text>
+          <text class="note" x="300" y="342">part is usually</text>
+          <text class="note" x="300" y="366">down here</text>
+        </g>
+        <path class="ink-soft draw" d={noteArrow} pathLength="1" style="--d: 1900ms; --dur: 360ms" />
+        <path class="ink-soft appear" d={noteHead} style="--d: 2150ms" />
+      </svg>
+    </figure>
+  </div>
+</Sheet>
+
+<style>
+  .hero {
+    padding-top: var(--s-5);
+    padding-bottom: var(--s-6);
+  }
+
+  .hero :global(.marker) {
+    top: calc(var(--s-5) - 0.35rem);
+  }
+
+  .hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.9fr);
+    gap: var(--s-6) var(--s-7);
+    align-items: center;
+  }
+
+  .hero__name {
+    font-size: var(--fs-display);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.92;
+    margin-left: -0.04em;
+  }
+
+  .hero__title {
+    margin-top: var(--s-4);
+    font-family: var(--font-sans);
+    font-size: var(--fs-md);
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+
+  .hero__lede {
+    margin-top: var(--s-5);
+    max-width: 34em;
+    font-size: clamp(1.1875rem, 1.05rem + 0.45vw, 1.375rem);
+    line-height: 1.55;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-6);
+  }
+
+  .hero__links {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-5);
+    margin-top: var(--s-5);
+    font-size: var(--fs-sm);
+    font-family: var(--font-sans);
+  }
+
+  .hero__links .label {
+    margin-right: 0.3em;
+  }
+
+  .hero__avail {
+    flex-basis: 100%;
+    color: var(--pencil);
+  }
+
+  .hero__figure {
+    justify-self: end;
+    width: min(100%, 31rem);
+  }
+
+  .hero__svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .hero__svg :global(path) {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* the generic "paths are unfilled" rule above must not empty the eyes */
+  .hero__svg :global(.eyes__white) {
+    fill: var(--eye-white);
+  }
+
+  .hero__svg .paper {
+    fill: var(--pad);
+    stroke: none;
+  }
+
+  .hero__svg .ink {
+    stroke: var(--ink);
+    stroke-width: 2;
+  }
+
+  .hero__svg .ink-soft {
+    stroke: var(--ink);
+    stroke-width: 1.6;
+  }
+
+  .hero__svg .pencil {
+    stroke: var(--pencil);
+    stroke-width: 1.3;
+  }
+
+  .hero__svg .hatching {
+    stroke: var(--pencil);
+    stroke-width: 0.9;
+    opacity: 0.7;
+  }
+
+  .hero__svg .trace {
+    stroke: var(--ink);
+    stroke-width: 1.4;
+    stroke-dasharray: 4 6;
+    opacity: 0.8;
+  }
+
+  .hero__svg .trace-head {
+    stroke: var(--ink);
+    stroke-width: 1.4;
+  }
+
+  .hero__svg text {
+    fill: var(--pencil);
+  }
+
+  .hero__svg .layer-label {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .hero__svg .mono-label {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    fill: var(--graphite);
+  }
+
+  .hero__svg .tiny-label {
+    font-family: var(--font-hand);
+    font-size: 14px;
+  }
+
+  .hero__svg .note {
+    font-family: var(--font-hand);
+    font-weight: 300;
+    font-size: 21px;
+    fill: var(--ink);
+  }
+
+  @media (max-width: 56rem) {
+    .hero__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .hero__figure {
+      justify-self: start;
+      width: min(100%, 27rem);
+    }
+  }
+</style>

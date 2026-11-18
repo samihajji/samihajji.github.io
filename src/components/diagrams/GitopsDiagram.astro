@@ -1,0 +1,123 @@
+---
+/**
+ * webhook-task-pipeline-dl: the Argo CD app-of-apps and its sync waves,
+ * read from platform/argo-phase/applications/*.yaml and the charts' own
+ * sync-wave annotations.
+ */
+import DiagramFigure from './DiagramFigure.astro';
+import { box, line, arrow, curve, arrowHead } from '../../lib/sketch';
+
+interface Props {
+  id: string;
+  caption: string;
+  callouts: { id: string; label: string; text: string }[];
+}
+const { id, caption, callouts } = Astro.props;
+
+const W = 600, H = 440;
+const positions = {
+  ci: [208, 18],
+  root: [588, 18],
+  certs: [128, 108],
+  gateway: [384, 108],
+  secrets: [384, 172],
+  migrate: [496, 168],
+  monitoring: [384, 290],
+} as const;
+
+const b = (x: number, y: number, w: number, h: number, s: number) => box(x, y, w, h, s, { overshoot: 2.5, bow: 1 });
+const hl = (x1: number, x2: number, y: number) => line([x1, y], [x2, y], 77, { bow: 1.5 });
+const cols = [
+  { x: 16, w: 104, wave: '−20' },
+  { x: 136, w: 104, wave: '−10' },
+  { x: 256, w: 124, wave: '0' },
+  { x: 396, w: 96, wave: '5' },
+  { x: 508, w: 76, wave: '10' },
+];
+const centers = cols.map((c) => c.x + c.w / 2);
+---
+<DiagramFigure
+  id={id}
+  width={W}
+  height={H}
+  title="Diagram of the GitOps platform: pull request CI validates charts before merge to Git; a root Argo CD application watches the applications directory; child applications sync in waves: cert-manager at minus 20, the local CA at minus 10, the Gateway, PostgreSQL with sealed secrets, the API and monitoring at 0, the migration Job at 5 and the worker at 10."
+  caption={caption}
+  callouts={callouts}
+  positions={positions}
+>
+  <g data-part="ci"><path class="hl" d={hl(22, 200, 42)} pathLength="1" stroke-width="38" /></g>
+  <g data-part="root"><path class="hl" d={hl(398, 578, 42)} pathLength="1" stroke-width="38" /></g>
+  <g data-part="certs"><path class="hl" d={hl(22, 234, 136)} pathLength="1" stroke-width="32" /></g>
+  <g data-part="gateway"><path class="hl" d={hl(262, 374, 136)} pathLength="1" stroke-width="32" /></g>
+  <g data-part="secrets"><path class="hl" d={hl(262, 374, 210)} pathLength="1" stroke-width="16" /></g>
+  <g data-part="migrate"><path class="hl" d={hl(402, 578, 196)} pathLength="1" stroke-width="32" /></g>
+  <g data-part="monitoring"><path class="hl" d={hl(262, 374, 312)} pathLength="1" stroke-width="32" /></g>
+
+  <!-- top row: CI -> Git -> root -->
+  <path class="pencil" d={b(16, 18, 190, 48, 1)} />
+  <text x="28" y="38">pull request CI</text>
+  <text class="t-small" x="28" y="56">lint, render, kubeconform</text>
+  <path class="ink-thin" d={arrow([208, 42], [234, 42], 3, { head: 7 })} />
+  <text class="t-small" x="204" y="80">merge</text>
+  <path class="ink" d={b(238, 20, 112, 44, 5)} />
+  <text x="252" y="47">Git: main</text>
+  <path class="ink-thin" d={arrow([352, 42], [390, 42], 7, { head: 7 })} />
+  <text class="t-small" x="350" y="80">watches</text>
+  <path class="ink" d={b(394, 18, 190, 48, 9)} />
+  <text x="406" y="47">root: app of apps</text>
+
+  <!-- the applications/ rail and drops into each wave column -->
+  <path class="ink-thin" d={line([489, 66], [489, 90], 11)} />
+  <path class="ink-thin" d={line([centers[0]!, 90], [489, 90], 12, { bow: 1 })} />
+  <path class="ink-thin" d={line([489, 90], [centers[4]!, 90], 13)} />
+  {centers.map((cx, i) => <path class="ink-thin" d={line([cx, 90], [cx, 110], 14 + i)} />)}
+  <text class="t-mono" x="24" y="84">applications/</text>
+
+  <!-- wave -20 and -10: PKI first -->
+  <path class="ink" d={b(16, 112, 104, 44, 21)} />
+  <text x="25" y="139" style="font-size: 14px">cert-manager</text>
+  <path class="ink-thin" d={arrow([121, 134], [133, 134], 22, { head: 6 })} />
+  <path class="ink" d={b(136, 112, 104, 44, 23)} />
+  <text x="147" y="132">local CA</text>
+  <text class="t-small" x="147" y="148">issuers, certs</text>
+  <path class="ink-thin" d={arrow([241, 134], [253, 134], 24, { head: 6 })} />
+
+  <!-- wave 0 -->
+  <path class="ink" d={b(256, 112, 124, 44, 25)} />
+  <text x="266" y="132">Gateway</text>
+  <text class="t-small" x="266" y="148">Envoy, HTTPS</text>
+  <path class="ink" d={b(256, 174, 124, 44, 27)} />
+  <text x="266" y="194">PostgreSQL</text>
+  <text class="t-small" x="266" y="211">SealedSecrets</text>
+  <path class="ink" d={b(256, 234, 124, 40, 29)} />
+  <text x="266" y="259">API</text>
+  <path class="ink" d={b(256, 290, 124, 44, 31)} />
+  <text x="266" y="310">monitoring</text>
+  <text class="t-small" x="266" y="326">kube-prom-stack</text>
+
+  <!-- HTTPRoutes from the Gateway -->
+  <path class="ink-dash" d={curve([[256, 150], [232, 200], [254, 252]], 0.7)} />
+  <path class="ink-thin" d={arrowHead([255, 253], 0.9, 6, 33)} />
+  <path class="ink-dash" d={curve([[256, 152], [210, 240], [254, 308]], 0.7)} />
+  <path class="ink-thin" d={arrowHead([255, 309], 0.9, 6, 34)} />
+  <text class="t-small" x="140" y="276">HTTPRoutes</text>
+
+  <!-- wave 5 and 10: schema before consumers -->
+  <path class="ink-thin" d={arrow([381, 196], [393, 196], 35, { head: 6 })} />
+  <path class="ink" d={b(396, 174, 96, 44, 37)} />
+  <text x="405" y="194">migration</text>
+  <text class="t-small" x="405" y="211">a Job</text>
+  <path class="ink-thin" d={arrow([493, 196], [505, 196], 38, { head: 6 })} />
+  <path class="ink" d={b(508, 174, 76, 44, 39)} />
+  <text x="518" y="201">worker</text>
+
+  <!-- the sync-wave axis -->
+  <path class="ink" d={arrow([16, 378], [586, 378], 41, { head: 9 })} />
+  {centers.map((cx, i) => (
+    <>
+      <path class="ink-thin" d={line([cx, 372], [cx, 384], 42 + i, { bow: 0.3 })} />
+      <text class="t-mono" x={cx} y="402" text-anchor="middle">{cols[i]!.wave}</text>
+    </>
+  ))}
+  <text class="t-hand" x="16" y="432">sync wave, earlier to later</text>
+</DiagramFigure>

@@ -1,0 +1,69 @@
+---
+/**
+ * Frame for a hand-drawn diagram: the SVG (slot), numbered balloons placed
+ * over it, a caption, and the callout list. The list is always visible, so
+ * nothing depends on hover. scripts/callouts.ts cross-highlights a balloon,
+ * its part of the drawing and its list item on hover, focus or tap.
+ */
+interface Callout {
+  id: string;
+  label: string;
+  text: string;
+}
+interface Props {
+  id: string;
+  width: number;
+  height: number;
+  title: string;
+  caption: string;
+  callouts: Callout[];
+  /** Balloon positions in the SVG's own coordinates, keyed by callout id. */
+  positions: Record<string, readonly [number, number]>;
+  wide?: boolean;
+}
+const { id, width, height, title, caption, callouts, positions, wide = false } = Astro.props;
+const placed = callouts.filter((c) => positions[c.id]);
+const missing = callouts.filter((c) => !positions[c.id]).map((c) => c.id);
+if (missing.length) {
+  throw new Error(`Diagram "${id}" has no balloon position for callout(s): ${missing.join(', ')}`);
+}
+---
+<figure class:list={['diagram', { 'diagram--wide': wide || placed.length === 0 }]} data-callouts={placed.length ? '' : undefined} data-draw>
+  <div>
+    <p class="diagram__hint hand" aria-hidden="true">drag sideways to see the whole drawing</p>
+    <div class="diagram__scroll" role="region" aria-label={`Diagram: ${caption}`}>
+    <div class="diagram__canvas">
+      <svg class="sketch diagram__svg" viewBox={`0 0 ${width} ${height}`} role="img" aria-label={title}>
+        <slot />
+      </svg>
+      {placed.map((c, i) => {
+        const [x, y] = positions[c.id]!;
+        return (
+          <button
+            type="button"
+            class="balloon"
+            data-callout={c.id}
+            aria-describedby={`${id}-note-${c.id}`}
+            style={`left: ${((x / width) * 100).toFixed(2)}%; top: ${((y / height) * 100).toFixed(2)}%`}
+          >
+            <span aria-hidden="true">{i + 1}</span>
+            <span class="visually-hidden">Callout {i + 1}: {c.label}</span>
+          </button>
+        );
+      })}
+    </div>
+    </div>
+    <figcaption>{caption}</figcaption>
+  </div>
+  {placed.length > 0 && (
+    <ol class="callouts" aria-label="Callouts">
+      {placed.map((c, i) => (
+        <li id={`${id}-note-${c.id}`} data-callout={c.id}>
+          <span class="callouts__n" aria-hidden="true">{i + 1}</span>
+          <strong>{c.label}</strong>
+          <p>{c.text}</p>
+        </li>
+      ))}
+    </ol>
+  )}
+</figure>

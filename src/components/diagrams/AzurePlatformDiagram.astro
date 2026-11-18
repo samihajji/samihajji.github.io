@@ -1,0 +1,62 @@
+---
+/**
+ * Phase 2 of azure-aks-platform: planned, not built. Drawn entirely in
+ * dashed pencil to keep that visible. Content from the repository README's
+ * ownership boundary and Phase 2 table.
+ */
+import DiagramFigure from './DiagramFigure.astro';
+import { box, curve, arrowHead, wavyVertical } from '../../lib/sketch';
+
+interface Props {
+  id: string;
+  caption: string;
+}
+const { id, caption } = Astro.props;
+
+const W = 600, H = 340;
+const left = [
+  'Resource groups, VNet, DNS zones',
+  'AKS: Azure CNI Powered by Cilium',
+  'Identities, federated credentials',
+  'Redis, Event Hubs, PostgreSQL',
+  'Remote state, initial Argo CD',
+];
+const right = [
+  'Argo CD, managing itself',
+  'Gateway API on AGC, cert-manager',
+  'ExternalDNS, network policies',
+  'The Astronomy Shop workload',
+  'OpenTelemetry observability',
+];
+const rowY = (i: number) => 52 + i * 52;
+const handover = curve([[282, 274], [300, 180], [318, 74]], 0.8);
+---
+<DiagramFigure
+  id={id}
+  width={W}
+  height={H}
+  title="Planned design, not yet built: on the left, what Terraform will own (resource groups, network and DNS zones; AKS on Azure CNI Powered by Cilium; identities and federated credentials; managed Redis, Event Hubs and PostgreSQL; remote state and the initial Argo CD install). On the right, what Argo CD will own after the handover (itself; Gateway API on Application Gateway for Containers and cert-manager; ExternalDNS and network policies; the Astronomy Shop; OpenTelemetry)."
+  caption={caption}
+  callouts={[]}
+  positions={{}}
+  wide
+>
+  <text class="t-hand" x="16" y="32">Terraform owns</text>
+  <text class="t-hand" x="324" y="32">Argo CD owns, after the handover</text>
+  <path class="pencil-dash" d={wavyVertical(300, 44, 330, 1.4, 5)} />
+
+  {left.map((t, i) => (
+    <>
+      <path class="pencil-dash" d={box(16, rowY(i), 268, 40, 10 + i, { overshoot: 2, bow: 0.8 })} />
+      <text class="t-pencil" x="28" y={rowY(i) + 25} style="font-size: 14.5px">{t}</text>
+    </>
+  ))}
+  {right.map((t, i) => (
+    <>
+      <path class="pencil-dash" d={box(316, rowY(i), 268, 40, 30 + i, { overshoot: 2, bow: 0.8 })} />
+      <text class="t-pencil" x="328" y={rowY(i) + 25} style="font-size: 14.5px">{t}</text>
+    </>
+  ))}
+  <path class="pencil" d={handover} />
+  <path class="pencil" d={arrowHead([318, 74], -1.2, 8, 51)} />
+</DiagramFigure>

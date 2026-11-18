@@ -1,0 +1,129 @@
+---
+/**
+ * The Cilium sandbox: private access, two nodes, the pod datapath, kube-proxy
+ * removed, VXLAN between nodes, policy by identity, Hubble. Every element
+ * corresponds to something documented in docs/cilium/ of azure-aks-platform.
+ */
+import DiagramFigure from './DiagramFigure.astro';
+import { box, line, arrow, curve } from '../../lib/sketch';
+
+interface Props {
+  id: string;
+  caption: string;
+  callouts: { id: string; label: string; text: string }[];
+}
+const { id, caption, callouts } = Astro.props;
+
+const W = 600, H = 470;
+const positions = {
+  access: [262, 76],
+  pod: [28, 142],
+  socket: [262, 150],
+  kubeproxy: [272, 204],
+  vxlan: [300, 350],
+  policy: [454, 142],
+  hubble: [588, 20],
+} as const;
+
+const b = (x: number, y: number, w: number, h: number, s: number) => box(x, y, w, h, s, { overshoot: 2.5, bow: 1 });
+const hl = (x1: number, x2: number, y: number) => line([x1, y], [x2, y], 99, { bow: 1.5 });
+---
+<DiagramFigure
+  id={id}
+  width={W}
+  height={H}
+  title="Diagram of the Cilium sandbox: an admin reaches a private API server through an SSH tunnel and a jumpbox; two nodes each run pods connected by veth pairs to cilium_host and an eBPF datapath; kube-proxy is crossed out; nodes exchange VXLAN traffic whose VNI carries the sender's identity; node b enforces policy by identity with Envoy for L7; Hubble Relay collects flows from both nodes."
+  caption={caption}
+  callouts={callouts}
+  positions={positions}
+>
+  <!-- highlighter layer (under everything) -->
+  <g data-part="access"><path class="hl" d={hl(22, 440, 43)} pathLength="1" stroke-width="34" /></g>
+  <g data-part="pod"><path class="hl" d={hl(40, 126, 169)} pathLength="1" stroke-width="30" /></g>
+  <g data-part="socket"><path class="hl" d={hl(142, 262, 174)} pathLength="1" stroke-width="34" /></g>
+  <g data-part="kubeproxy"><path class="hl" d={hl(178, 260, 226)} pathLength="1" stroke-width="30" /></g>
+  <g data-part="vxlan"><path class="hl" d={hl(182, 420, 378)} pathLength="1" stroke-width="26" /></g>
+  <g data-part="policy"><path class="hl" d={hl(338, 444, 178)} pathLength="1" stroke-width="54" /></g>
+  <g data-part="hubble"><path class="hl" d={hl(478, 578, 43)} pathLength="1" stroke-width="34" /></g>
+
+  <!-- access: admin -> jumpbox -> private API -->
+  <path class="pencil" d={b(16, 24, 74, 38, 1)} />
+  <text x="31" y="48">admin</text>
+  <path class="ink-thin" d={arrow([92, 43], [126, 43], 3, { head: 7 })} />
+  <path class="ink" d={b(130, 24, 96, 38, 5)} />
+  <text x="145" y="48">jumpbox</text>
+  <path class="ink-dash" d={line([230, 38], [292, 38], 7, { bow: 0.6 })} />
+  <path class="ink-dash" d={line([230, 49], [292, 49], 8, { bow: 0.6 })} />
+  <text class="t-small" x="240" y="30">ssh -L</text>
+  <path class="ink" d={b(296, 20, 150, 46, 9)} />
+  <text x="309" y="48">private API server</text>
+  <text class="t-hand" x="305" y="88">no public FQDN</text>
+
+  <path class="pencil" d={b(470, 20, 114, 46, 11)} />
+  <text x="483" y="48">Hubble Relay</text>
+  <path class="pencil-dash" d={curve([[492, 68], [400, 98], [230, 112]], 0.7)} />
+  <path class="pencil-dash" d={line([548, 68], [548, 112], 13)} />
+
+  <!-- node a -->
+  <path class="ink" d={b(16, 112, 272, 298, 15)} />
+  <text class="t-hand" x="26" y="404">node a</text>
+
+  <path class="ink" d={b(36, 148, 92, 44, 17)} />
+  <text x="57" y="176">client</text>
+  <path class="ink-thin" d={line([82, 192], [82, 246], 19)} />
+  <text class="t-small" x="90" y="214">a /32 per pod</text>
+  <text class="t-small" x="90" y="234">veth</text>
+  <path class="ink" d={b(36, 246, 112, 36, 21)} />
+  <text x="46" y="269">cilium_host</text>
+
+  <text class="t-mono" x="144" y="168">connect()</text>
+  <text class="t-small" x="144" y="186">Service IP → pod IP</text>
+
+  <path class="pencil" d={b(176, 208, 90, 38, 23)} />
+  <text class="t-pencil" x="185" y="232">kube-proxy</text>
+  <g data-draw-group>
+    <path class="red draw" d={line([172, 212], [270, 244], 25, { bow: 3 })} pathLength="1" style="--d: 500ms; --dur: 380ms" />
+    <path class="red draw" d={line([172, 244], [268, 210], 26, { bow: 3 })} pathLength="1" style="--d: 820ms; --dur: 380ms" />
+  </g>
+  <text class="t-red appear" x="188" y="270" style="--d: 1100ms">removed</text>
+
+  <path class="ink-thin" d={line([82, 282], [82, 300], 27)} />
+  <path class="ink" d={b(28, 300, 250, 40, 29)} />
+  <text x="40" y="325">eBPF datapath</text>
+  <text class="t-small" x="156" y="325">tc, socket, maps</text>
+  <path class="ink-thin" d={line([138, 340], [138, 360], 31)} />
+  <path class="ink" d={b(100, 360, 76, 32, 33)} />
+  <text x="121" y="381">eth0</text>
+
+  <!-- node b -->
+  <path class="ink" d={b(312, 112, 272, 298, 35)} />
+  <text class="t-hand" x="526" y="404">node b</text>
+
+  <path class="ink" d={b(330, 148, 118, 60, 37)} />
+  <text x="341" y="170">policy map</text>
+  <text class="t-small" x="341" y="187">identity → verdict</text>
+  <text class="t-small" x="341" y="202">L7: GET only</text>
+  <path class="pencil" d={b(340, 222, 104, 32, 39)} />
+  <text class="t-pencil" x="350" y="243">Envoy (L7)</text>
+
+  <path class="ink" d={b(470, 148, 96, 44, 41)} />
+  <text x="496" y="176">nginx</text>
+  <path class="ink-thin" d={line([518, 192], [518, 246], 43)} />
+  <text class="t-small" x="526" y="234">veth</text>
+  <path class="ink" d={b(454, 246, 112, 36, 45)} />
+  <text x="464" y="269">cilium_host</text>
+
+  <path class="ink-thin" d={line([510, 282], [510, 300], 47)} />
+  <path class="ink" d={b(324, 300, 250, 40, 49)} />
+  <text x="336" y="325">eBPF datapath</text>
+  <text class="t-small" x="452" y="325">tc, socket, maps</text>
+  <path class="ink-thin" d={line([462, 340], [462, 360], 51)} />
+  <path class="ink" d={b(424, 360, 76, 32, 53)} />
+  <text x="445" y="381">eth0</text>
+
+  <!-- VXLAN tunnel between the nodes -->
+  <path class="ink" d={line([178, 371], [422, 371], 55, { bow: 1.2 })} />
+  <path class="ink" d={line([178, 384], [422, 384], 56, { bow: 1.2 })} />
+  <path class="ink-thin" d={arrow([300, 440], [300, 392], 57, { head: 7 })} />
+  <text class="t-hand" x="150" y="460">VXLAN on UDP 8472: the VNI carries the sender’s identity</text>
+</DiagramFigure>

@@ -1,0 +1,30 @@
+---
+/**
+ * The header strip of a computation pad. Every field carries real
+ * information (sheet number, subject, dates, status), never decoration.
+ */
+import { frame } from '../../lib/sketch';
+
+interface Field {
+  label: string;
+  value: string;
+}
+interface Props {
+  fields: Field[];
+  seed?: number;
+}
+const { fields, seed = 3 } = Astro.props;
+---
+<div class="titleblock">
+  <dl>
+    {fields.map((f) => (
+      <div>
+        <dt>{f.label}</dt>
+        <dd>{f.value}</dd>
+      </div>
+    ))}
+  </dl>
+  <svg class="titleblock__frame" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <path d={frame(seed)} />
+  </svg>
+</div>

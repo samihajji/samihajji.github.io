@@ -1,0 +1,90 @@
+---
+/**
+ * The red-pencil moment: a statement struck through, and the correction
+ * written underneath. Used once on the page, for a real finding.
+ */
+interface Props {
+  struck: string;
+  note: string;
+}
+const { struck, note } = Astro.props;
+---
+<div class="correction" data-draw>
+  <p class="correction__line">
+    <span class="visually-hidden">What I first believed:</span>
+    <s class="correction__struck">{struck}</s>
+  </p>
+  <svg class="correction__arrow" viewBox="0 0 40 46" aria-hidden="true" focusable="false">
+    <path class="draw" d="M8 2 C 6 18, 12 32, 30 40" pathLength="1" style="--d: 700ms; --dur: 320ms" />
+    <path class="appear" d="M21 41.5 L 30.5 40.4 L 26 32" style="--d: 980ms" />
+  </svg>
+  <p class="correction__note appear" style="--d: 900ms">
+    <span class="visually-hidden">Correction:</span>
+    {note}
+  </p>
+</div>
+
+<style>
+  .correction {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: 0 var(--s-3);
+    max-width: 44rem;
+    margin-block: var(--s-6);
+    padding: var(--s-4) var(--s-5) var(--s-4) var(--s-4);
+    background: var(--correction-bg);
+    border-left: 2px solid var(--red-pencil);
+  }
+
+  .correction__line {
+    grid-column: 1 / -1;
+    font-size: var(--fs-md);
+    line-height: 1.45;
+  }
+
+  .correction__struck {
+    text-decoration: none;
+    background-image: var(--img-strike);
+    background-repeat: no-repeat;
+    background-position: 0 56%;
+    background-size: 100% 0.5em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition: background-size 760ms var(--ease-pencil) 150ms;
+  }
+
+  :global(html.motion) .correction:not(:global(.is-drawn)) .correction__struck {
+    background-size: 0% 0.5em;
+  }
+
+  .correction__arrow {
+    width: 2.2rem;
+    height: auto;
+    margin-top: var(--s-1);
+  }
+
+  .correction__arrow path {
+    fill: none;
+    stroke: var(--red-pencil);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .correction__note {
+    padding-top: var(--s-3);
+    font-family: var(--font-hand);
+    font-weight: 400;
+    font-size: 1.2rem;
+    line-height: 1.4;
+    color: var(--red-pencil);
+  }
+
+  @media (forced-colors: active) {
+    .correction__struck {
+      text-decoration: line-through;
+      background: none;
+    }
+  }
+</style>

@@ -1,0 +1,109 @@
+---
+/**
+ * Sun / moon switch, drawn like the rest of the pad. In the dark (default)
+ * theme it shows a sun, meaning "switch to light"; in light it shows a moon.
+ * It hops once shortly after the page opens, and again on hover.
+ * Hidden without JavaScript, because it can't work without it.
+ */
+import { loop, line } from '../../lib/sketch';
+
+const rays = Array.from({ length: 8 }, (_, i) => {
+  const a = (i / 8) * Math.PI * 2 + 0.2;
+  const r0 = 10.2 + (i % 2) * 0.6;
+  const r1 = 14.4 + (i % 3) * 0.5;
+  return line([16 + Math.cos(a) * r0, 16 + Math.sin(a) * r0], [16 + Math.cos(a) * r1, 16 + Math.sin(a) * r1], 70 + i, { bow: 0.5 });
+});
+const sunDisc = loop(16, 16, 6.4, 6.4, 12);
+const moon = 'M19.6 5.2 C 13.1 5.9, 8.6 11.4, 9.3 17.6 C 10 23.4, 15.4 27.4, 21.3 26.6 C 23.7 26.3, 25.6 25.3, 27.1 23.8 C 20.4 24.6, 15 19.8, 15.2 13.4 C 15.3 10, 17 7, 19.6 5.2';
+const star = 'M25 7.2 L25.4 9.6 M23.9 8.5 L26.4 8.3';
+---
+<button type="button" class="theme-toggle" data-theme-toggle hidden aria-label="Switch to light theme">
+  <svg class="theme-toggle__icon theme-toggle__sun" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+    <g class="theme-toggle__rays">
+      {rays.map((d) => <path d={d} />)}
+    </g>
+    <path d={sunDisc} />
+  </svg>
+  <svg class="theme-toggle__icon theme-toggle__moon" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+    <path d={moon} />
+    <path class="theme-toggle__star" d={star} />
+  </svg>
+</button>
+
+<style>
+  .theme-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: -0.4rem -0.4rem -0.4rem 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .theme-toggle[hidden] {
+    display: none;
+  }
+
+  .theme-toggle:hover {
+    background: var(--hl-soft);
+  }
+
+  .theme-toggle__icon {
+    grid-area: 1 / 1;
+    width: 1.9rem;
+    height: 1.9rem;
+    overflow: visible;
+  }
+
+  .theme-toggle__icon path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .theme-toggle__rays {
+    transform-box: view-box;
+    transform-origin: 16px 16px;
+  }
+
+  /* dark theme shows the sun (go light); light theme shows the moon (go dark) */
+  :global(:root[data-theme='light']) .theme-toggle__sun,
+  :global(:root:not([data-theme='light'])) .theme-toggle__moon {
+    display: none;
+  }
+
+  @keyframes hop {
+    0% { transform: translateY(0) rotate(0); }
+    22% { transform: translateY(-7px) rotate(-10deg); }
+    42% { transform: translateY(0) scale(1.1, 0.88); }
+    58% { transform: translateY(-3px) rotate(6deg) scale(0.96, 1.04); }
+    76% { transform: translateY(0) rotate(0) scale(1.02, 0.98); }
+    100% { transform: none; }
+  }
+
+  @keyframes rays-turn {
+    to { transform: rotate(45deg); }
+  }
+
+  :global(html.motion) .theme-toggle.is-hopping .theme-toggle__icon,
+  :global(html.motion) .theme-toggle:hover .theme-toggle__icon {
+    animation: hop 720ms var(--ease-out) both;
+    transform-origin: 50% 100%;
+  }
+
+  :global(html.motion) .theme-toggle.is-hopping .theme-toggle__rays,
+  :global(html.motion) .theme-toggle:hover .theme-toggle__rays {
+    animation: rays-turn 720ms var(--ease-out) both;
+  }
+
+  :global(html.motion) .theme-toggle.is-hopping .theme-toggle__icon {
+    animation-iteration-count: 2;
+  }
+</style>
