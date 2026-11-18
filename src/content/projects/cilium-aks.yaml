@@ -1,0 +1,107 @@
+# Source: github.com/samimassoud/azure-aks-platform (Phase 1), README, docs/cilium/README.md,
+# terraform/environments/cilium-sandbox/*.tf. Every claim below is in that public repository.
+title: Cilium and eBPF on a private AKS cluster
+order: 1
+status: complete
+period: November 2026
+repository: samimassoud/azure-aks-platform
+role: Sole engineer. I designed, built, investigated, documented and then destroyed it.
+summary: >-
+  A disposable private AKS cluster created with no network plugin at all, so I could install and
+  operate upstream Cilium myself and see what a managed CNI does underneath.
+objective: >-
+  My Azure platform will run on AKS-managed Cilium. Before relying on a managed CNI, I wanted to
+  know how it really works: how pods get networking, how traffic crosses nodes, how Services work
+  with and without kube-proxy, and how policy is enforced.
+built:
+  - >-
+    Provisioned a private AKS 1.36 cluster entirely with Terraform (azurerm plus AzAPI). There is no
+    public API server and no public ingress, authentication is Entra ID with Azure RBAC, and local
+    accounts are disabled.
+  - >-
+    Reached the private API only through an SSH tunnel to a reusable jumpbox module whose NSG admits
+    a single admin address, with kubectl still verifying TLS.
+  - >-
+    Installed upstream Cilium 1.20.4 on Bring Your Own CNI and worked through eight documented
+    stages, from an empty CNI directory to the Hubble UI.
+  - >-
+    Replaced kube-proxy so Cilium handles every Service type in eBPF, and confirmed it with
+    before-and-after conntrack evidence and Cilium's 82-test connectivity suite.
+correction:
+  struck: Disabled AKS-managed kube-proxy with Terraform. terraform apply reported success.
+  note: >-
+    Nothing had changed. The stable ARM API version accepted the request and silently dropped the
+    preview-only property. A -preview API version through AzAPI worked, and I verified it on the
+    cluster, not from the tool's output.
+diagram: cilium
+diagramCaption: How a request crosses the sandbox, as I traced it with tcpdump, BPF map dumps and Hubble.
+callouts:
+  - id: access
+    label: One way in
+    text: An SSH tunnel through a jumpbox whose NSG allows port 22 from one /32. The API server has no public FQDN.
+  - id: pod
+    label: A /32 per pod
+    text: Each pod gets a /32 with the node's cilium_host as its gateway. Pod ranges live in CiliumNode, not the node spec.
+  - id: socket
+    label: Load balancing at connect()
+    text: The Service IP is swapped for a backend pod IP once, at connect(), before any packet exists.
+  - id: kubeproxy
+    label: kube-proxy removed
+    text: Disabled through AzAPI, then its leftover iptables rules flushed on each node. Cilium now handles every Service type.
+  - id: vxlan
+    label: Identity in the tunnel
+    text: Cross-node traffic is VXLAN on UDP 8472, and the VNI carries the sender's security identity.
+  - id: policy
+    label: Policy by identity
+    text: Allow and deny decisions use label-based identities in BPF policy maps, not IP addresses. L7 rules go through Envoy.
+  - id: hubble
+    label: Every flow, explained
+    text: Hubble records where each packet was seen and why it was forwarded or dropped. Relay aggregates every node.
+decisions:
+  - title: Bring Your Own CNI before managed Cilium
+    text: >-
+      Owning the install exposed the datapath I wanted to study. The cost is that AKS auto-repair
+      reboots and reimages NotReady nodes within minutes, so the CNI has to go in immediately.
+  - title: An SSH tunnel instead of a VPN gateway
+    text: >-
+      A single jumpbox locked to one admin IP keeps the API private without the cost of a gateway.
+      kubectl keeps verifying the server certificate through tls-server-name.
+  - title: Remote state that only Entra identities can reach
+    text: >-
+      Shared keys disabled, blob versioning, soft delete and a delete lock, in a separate region from
+      the workload. Plans are saved, reviewed and then applied exactly as reviewed.
+  - title: Sized from quota data, not guesses
+    text: >-
+      Two Standard_D4als_v7 nodes and a Standard_D2als_v7 jumpbox fill the 10-vCPU regional quota
+      exactly, checked with az vm list-skus and list-usage, under a monthly budget alert.
+  - title: Destroy it when the notes are done
+    text: >-
+      The sandbox was torn down once the findings were written up. Only the state backend remains,
+      and the platform cluster will start fresh.
+learned:
+  - Cross-node traffic is VXLAN between node IPs, and the VNI carries the sender's identity. Same-node traffic isn't encapsulated.
+  - Even with kubeProxyReplacement=false, Cilium translated pod-to-ClusterIP traffic in eBPF. The matching kube-proxy iptables rule counted 0 packets.
+  - With socket load balancing, conntrack shows a plain pod-to-backend flow while the application still sees the Service IP.
+  - An L7 rule through Envoy allowed GET (200) and denied POST (403), and Hubble showed the two TCP legs it creates.
+  - A green terraform apply isn't evidence. The cluster's state is.
+caveats:
+  - Nothing was benchmarked, so no performance claims are made.
+  - Native routing, WireGuard, BGP and ClusterMesh weren't covered. LoadBalancer Services were enabled but not tested, because a public Azure load balancer is billable.
+stack:
+  - Terraform (azurerm, AzAPI)
+  - AKS
+  - Cilium 1.20.4
+  - eBPF
+  - Hubble
+  - Envoy
+  - Entra ID and Azure RBAC
+  - kubelogin
+  - tcpdump
+  - Gitleaks
+links:
+  - label: Repository
+    href: https://github.com/samimassoud/azure-aks-platform
+  - label: Lab summary, eight stages
+    href: https://github.com/samimassoud/azure-aks-platform/tree/main/docs/cilium
+  - label: Sandbox Terraform and runbook
+    href: https://github.com/samimassoud/azure-aks-platform/tree/main/terraform/environments/cilium-sandbox

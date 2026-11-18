@@ -1,0 +1,52 @@
+# Source: github.com/samimassoud/azure-aks-platform README ("What's next: Phase 2"),
+# docs/architecture/README.md and docs/astronomy-shop/. Phase 2 has not started; everything here
+# is a design or an open decision, and is presented as such.
+title: Azure cloud-native platform, Phase 2
+order: 4
+status: planned
+period: Next, after the Cilium sandbox
+repository: samimassoud/azure-aks-platform
+role: Sole engineer. The design and the workload analysis are written. The cluster isn't built yet.
+summary: >-
+  A long-lived AKS cluster on Azure CNI Powered by Cilium, delivered by Argo CD, running the
+  OpenTelemetry Astronomy Shop, with its dependencies moving to managed Azure services.
+objective: >-
+  Turn what the sandbox taught me into a platform: Terraform owns Azure, Argo CD owns everything in
+  the cluster after a documented handover, and workloads authenticate with identity instead of
+  passwords where their client libraries support it.
+built:
+  - The Terraform remote-state backend and the jumpbox module, both already used by the sandbox.
+  - A workload analysis of the Astronomy Shop (every service, its interfaces, dependencies and configuration) written from its source code at a pinned commit.
+  - A decision record that separates approved choices from open questions.
+diagram: azure-platform
+diagramCaption: Pencil only. Nothing on this sheet is built yet, and the dotted line is the planned handover.
+callouts: []
+decisions:
+  - title: Terraform owns Azure, Argo CD owns the cluster
+    text: >-
+      Terraform creates resource groups, networking, AKS, identities, federated credentials, data
+      services and DNS zones, plus the initial Argo CD install. After that, Argo CD manages itself and
+      everything inside the cluster.
+  - title: Open, not decided
+    text: >-
+      Whether Application Gateway for Containers is managed by the ALB Controller or by Terraform,
+      whether ACNS observability justifies its cost, and whether each Kafka client works against the
+      Event Hubs endpoint.
+learned:
+  - Don't assume a capability seen in the sandbox exists on AKS-managed Cilium, or the other way round. Check each one against the documentation.
+caveats:
+  - None of the Phase 2 components is implemented yet.
+stack:
+  - AKS (Azure CNI Powered by Cilium)
+  - Argo CD
+  - Gateway API on Application Gateway for Containers
+  - cert-manager
+  - ExternalDNS
+  - Microsoft Entra Workload ID
+  - Azure Managed Redis
+  - Event Hubs
+  - PostgreSQL Flexible Server
+  - OpenTelemetry
+links:
+  - label: Roadmap and design
+    href: https://github.com/samimassoud/azure-aks-platform#whats-next-phase-2

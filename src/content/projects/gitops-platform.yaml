@@ -1,0 +1,98 @@
+# Source: github.com/samimassoud/webhook-task-pipeline-dl (git history 2026-06-29 to 2026-09-01),
+# platform/argo-phase/**, .github/workflows/{ci,helm-ci}.yaml.
+title: GitOps-managed Kubernetes platform
+order: 2
+status: complete
+period: June – September 2026
+repository: samimassoud/webhook-task-pipeline-dl
+role: Sole engineer, on my own application and my own time, in parallel with the internship.
+summary: >-
+  A webhook task-processing service I had written (API, worker, PostgreSQL, Drizzle migrations)
+  taken from Docker Compose to a cluster managed entirely by Argo CD from Git.
+objective: >-
+  Run a real back end the way a platform team would: packaged with Helm, delivered and reconciled
+  by Argo CD, with TLS from an internal CA, secrets kept safely in Git and monitoring delivered the
+  same way.
+built:
+  - >-
+    Moved the system in deliberate steps (Docker Compose, then raw Kubernetes manifests, then Helm
+    charts, then Argo CD), keeping each stage in the repository.
+  - >-
+    Wrote Helm charts for the API, worker, migration Job, Envoy Gateway and PostgreSQL, with
+    per-environment values files kept outside the charts.
+  - >-
+    Bootstrapped Argo CD with an app-of-apps root that prunes and self-heals, and ordered the
+    rollout with sync waves.
+  - >-
+    Issued TLS from a local CA with cert-manager, terminated it at an Envoy Gateway HTTPS listener,
+    and kept database credentials in Git as SealedSecrets.
+  - >-
+    Added CI for every pull request: lint, typecheck, test and Docker build for the app, plus helm
+    lint, helm template and kubeconform validation for the charts.
+diagram: gitops
+diagramCaption: The order in which Argo CD brings the platform up. Sync waves run from left to right.
+callouts:
+  - id: root
+    label: App of apps
+    text: One root Application watches the applications directory and prunes and self-heals the children.
+  - id: certs
+    label: PKI first
+    text: cert-manager syncs at wave -20 and the local CA issuers at -10, so certificates exist before anything asks for them.
+  - id: gateway
+    label: One Gateway, TLS at the edge
+    text: Envoy Gateway with an HTTPS listener. One certificate covers Argo CD's web and gRPC hostnames, and Grafana is routed through it.
+  - id: secrets
+    label: Secrets in Git, sealed
+    text: Database credentials are SealedSecrets at wave -1 inside the PostgreSQL chart, decrypted only in the cluster.
+  - id: migrate
+    label: Migrations before workers
+    text: The migration Job is its own application at wave 5, so the schema exists before the worker starts at wave 10.
+  - id: monitoring
+    label: Upstream chart, my values
+    text: kube-prometheus-stack is pinned at 88.5.4 from its upstream repository, with values pulled from this repo as a second source.
+  - id: ci
+    label: Charts checked before merge
+    text: Every pull request lints and renders each chart, then validates the manifests against Kubernetes 1.33 schemas.
+decisions:
+  - title: Server-Side Apply for kube-prometheus-stack
+    text: >-
+      Its CRDs are too large for the annotation that client-side apply stores, so the application
+      syncs with ServerSideApply=true.
+  - title: ignoreDifferences on HTTPRoutes
+    text: >-
+      The API server fills in defaults the chart never sets (parentRef group and kind, backend
+      weight), which kept the API application permanently out of sync. Ignoring exactly those fields
+      stopped Argo CD reporting drift that wasn't real.
+  - title: Values kept outside the upstream chart
+    text: >-
+      Rather than copying kube-prometheus-stack into the repository, the Application pulls the
+      pinned chart and references values from Git, so upgrades are a one-line version change.
+  - title: Grafana kept getting OOM-killed
+    text: >-
+      It restarted repeatedly with the chart defaults. I raised its resources in the values file and
+      let Argo CD roll it out, rather than patching the live Deployment.
+learned:
+  - Ordering matters more than speed. Sync waves turned a fragile manual bootstrap into a repeatable one.
+  - Most out-of-sync states were the API server and the chart disagreeing about defaults, not real drift.
+  - Getting a certificate's SANs and a Gateway listener's certificateRefs exactly right took several iterations, and each one is visible in the commit history.
+caveats:
+  - Ran on a local cluster, not a cloud environment.
+  - Publishing images to Docker Hub and application-level metrics are still on the README's goal list. CI builds the image but doesn't push it.
+stack:
+  - Kubernetes
+  - Helm
+  - Argo CD
+  - Envoy Gateway
+  - Gateway API
+  - cert-manager
+  - Sealed Secrets
+  - PostgreSQL
+  - kube-prometheus-stack
+  - GitHub Actions
+  - kubeconform
+  - TypeScript
+links:
+  - label: Repository
+    href: https://github.com/samimassoud/webhook-task-pipeline-dl
+  - label: Argo CD applications
+    href: https://github.com/samimassoud/webhook-task-pipeline-dl/tree/main/platform/argo-phase/applications

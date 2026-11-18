@@ -1,0 +1,104 @@
+# Source: github.com/image-processor-demo/{app,modules,infra} (git history 2025-12-25 to 2026-01-06),
+# modules/frontend/*.tf, modules/backend/*.tf, infra/global/iam.tf, the workflows in app and infra,
+# and the owner's own architecture diagram.
+title: Secure image processor on AWS, delivered through GitOps
+order: 3
+status: complete
+period: December 2025 – January 2026
+repository: image-processor-demo, 3 repositories
+role: Sole engineer, across three repositories in a GitHub organization.
+summary: >-
+  A static React front end and a Python Lambda behind a single CloudFront distribution, with every
+  change flowing through Git: app releases become commits to the infrastructure repo, and
+  Terraform applies them.
+objective: >-
+  Serve a static site and its API securely, with no public bucket, HTTPS everywhere and an API that
+  only CloudFront can call, and make Git the source of truth for every change, without a single
+  long-lived cloud credential.
+built:
+  - >-
+    Split the system into three repositories: the application, reusable Terraform modules, and the
+    live environments that consume them.
+  - >-
+    Served the front end from a private S3 bucket through CloudFront with Origin Access Control
+    (SigV4-signed requests), with public access blocked on the bucket and viewers redirected to HTTPS.
+  - >-
+    Routed /api/* through the same distribution to API Gateway, adding a shared-secret header that
+    the Lambda checks before doing any work, with stage throttling at 10 requests per second.
+  - >-
+    Built artifact-driven pipelines. The back-end workflow uploads a SHA-named Lambda zip, then
+    commits that version into the infrastructure repo, and that commit triggers Terraform.
+  - >-
+    Federated GitHub Actions to AWS with OIDC, so no workflow stores AWS keys, and ran Checkov,
+    tfsec and TFLint on infrastructure pull requests.
+diagram: aws
+diagramCaption: Redrawn from my own architecture diagram. Requests on top, delivery below.
+callouts:
+  - id: oac
+    label: No public bucket
+    text: CloudFront reaches the bucket through Origin Access Control with SigV4 signing, and S3 blocks all public access.
+  - id: https
+    label: HTTPS only
+    text: Both cache behaviours redirect HTTP to HTTPS, and CloudFront talks to API Gateway over TLS 1.2 only.
+  - id: header
+    label: Only CloudFront may call the API
+    text: CloudFront adds an X-Origin-Verify header, and the Lambda returns 403 when it's missing or wrong.
+  - id: throttle
+    label: Throttled
+    text: API Gateway stage throttling at 10 requests per second with a burst of 5.
+  - id: promote
+    label: Release by commit
+    text: backend-cd uploads the build, then commits its SHA-named version to the infra repo. Git history is the deployment log.
+  - id: oidc
+    label: No stored keys
+    text: Workflows assume an IAM role through GitHub's OIDC provider, so there are no long-lived AWS credentials anywhere.
+  - id: modules
+    label: Versioned modules
+    text: Environments pin modules by Git tag (v0.1.0 to v0.3.16), so a module change is a deliberate version bump.
+decisions:
+  - title: Three repositories instead of one
+    text: >-
+      Application code, reusable modules and live environments change at different speeds and for
+      different reasons. Splitting them made every promotion an explicit, reviewable commit.
+  - title: One distribution for site and API
+    text: >-
+      Putting the API behind the same CloudFront origin avoids CORS and gives a single HTTPS entry
+      point. The trade-off is that the API's own endpoint still exists, which is why the origin
+      header check matters.
+  - title: Artifacts named by commit SHA
+    text: >-
+      Builds are immutable and traceable. Rolling back is a revert of the commit that bumped the
+      version.
+  - title: OIDC over access keys
+    text: >-
+      Short-lived credentials scoped to an IAM role, issued per workflow run, with nothing to rotate
+      or leak.
+learned:
+  - Origin Access Control makes "private bucket, public site" a configuration, not a workaround.
+  - Cross-repository promotion needs care with credentials and loops, but it gives a clear deployment record.
+  - Pinning module versions turns infrastructure changes into something you can review like code.
+caveats:
+  - Only the dev environment has a delivery pipeline. The prod environment exists as an empty scaffold.
+  - The distribution uses CloudFront's default certificate. A custom domain with ACM and Route 53, and the AWS WAF configuration, aren't in the public modules.
+stack:
+  - Terraform
+  - AWS CloudFront
+  - S3
+  - API Gateway
+  - Lambda (Python)
+  - IAM and OIDC
+  - CloudWatch Logs
+  - GitHub Actions
+  - Checkov
+  - tfsec
+  - TFLint
+  - React
+links:
+  - label: GitHub organization
+    href: https://github.com/orgs/image-processor-demo/repositories
+  - label: Terraform modules
+    href: https://github.com/image-processor-demo/modules
+  - label: Live environments
+    href: https://github.com/image-processor-demo/infra
+  - label: Application
+    href: https://github.com/image-processor-demo/app
