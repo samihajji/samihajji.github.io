@@ -1,0 +1,135 @@
+/*
+ * Design tokens.
+ *
+ * Two themes share one vocabulary. Ink is finished work, pencil is work in
+ * progress, dotted pencil is planned, and red pencil is only for corrections.
+ *
+ *   dark (default): a moonlit night-sky pad, chalk-white text, moonlight-blue ink
+ *   light:          the pale green engineering computation pad
+ *
+ * The theme is set on <html data-theme>. Without JavaScript the page is dark.
+ * Every text colour below meets WCAG AA (most meet AAA) against its own pad.
+ */
+
+:root {
+  /* ---------- dark: moonlight ---------- */
+  --pad: #0e1830;
+  --pad-raised: #14213f;
+  --pad-shade: #0a1226;
+  --grid-major: rgb(150 178 225 / 0.11);
+  --grid-minor: rgb(150 178 225 / 0.05);
+
+  --graphite: #e9eef7; /* body text: 15.6:1 */
+  --pencil: #a9b6cc; /* secondary text: 8.6:1 */
+  --pencil-faint: #6f7f9c; /* decorative only */
+  --ink: #a8c8ff; /* links, line work: 10.4:1 */
+  --ink-deep: #cfe0ff;
+  --on-ink: #0e1830; /* text on ink-filled buttons */
+  --highlighter: #e8c85a;
+  --on-highlighter: #14213f;
+  --red-pencil: #ff8f80; /* corrections: 8.1:1 */
+
+  --rule: rgb(169 182 204 / 0.32);
+  --rule-strong: rgb(168 200 255 / 0.45);
+  --hl-soft: rgb(232 200 90 / 0.2);
+  --hl-strong: rgb(232 200 90 / 0.3);
+  --hl-svg-opacity: 0.5;
+  --hl-blend: normal; /* multiply would vanish on a dark pad */
+  --shadow-ink: rgb(0 0 0 / 0.4);
+  --code-bg: rgb(233 238 247 / 0.08);
+  --correction-bg: rgb(255 143 128 / 0.06);
+  --eye-white: #e9eef7;
+  --eye-pupil: #0e1830;
+
+  /* small inline SVG images, one set per theme (url() cannot take var()) */
+  --img-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .92 0 0 0 0 .95 0 0 0 0 1 0 0 0 .1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --img-underline: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 8' preserveAspectRatio='none'%3E%3Cpath d='M1 5.2 C 22 3.4, 41 6.6, 62 4.6 S 101 3.2, 119 5' fill='none' stroke='%23a8c8ff' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  --img-balloon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M33.6 13.4 C 37.4 22.3, 31.6 34.7, 20.4 35.2 C 9.6 35.7, 3.9 26.9, 4.9 18.6 C 5.9 10.2, 13.1 4.4, 21.5 4.9 C 28.6 5.3, 34.6 10.6, 35.4 15.8' fill='none' stroke='%23a8c8ff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  --img-tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 12'%3E%3Cpath d='M1.5 6.8 C 3 8, 4.4 9.4, 5.6 10.6 C 8 6.6, 11 3.4, 14.8 1.2' fill='none' stroke='%23a8c8ff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --img-strike: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 10' preserveAspectRatio='none'%3E%3Cpath d='M1 6.2 C 40 4.4, 80 6.8, 120 4.9 S 180 5.6, 199 4.2' fill='none' stroke='%23ff8f80' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E");
+
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  /* ---------- light: the computation pad ---------- */
+  --pad: #e8ede0;
+  --pad-raised: #eef2e7;
+  --pad-shade: #dfe6d4;
+  --grid-major: rgb(201 213 188 / 0.55);
+  --grid-minor: rgb(201 213 188 / 0.28);
+
+  --graphite: #2f3336; /* 11.2:1 */
+  --pencil: #5f666b; /* 5.0:1 */
+  --pencil-faint: #8f978f;
+  --ink: #24426e; /* 8.8:1 */
+  --ink-deep: #1b3357;
+  --on-ink: #e8ede0;
+  --highlighter: #e6d85a;
+  --on-highlighter: #24426e;
+  --red-pencil: #ae3a2e; /* 5.5:1 */
+
+  --rule: rgb(95 102 107 / 0.42);
+  --rule-strong: rgb(36 66 110 / 0.5);
+  --hl-soft: rgb(230 216 90 / 0.38);
+  --hl-strong: rgb(230 216 90 / 0.6);
+  --hl-svg-opacity: 0.72;
+  --hl-blend: multiply;
+  --shadow-ink: rgb(36 66 110 / 0.22);
+  --code-bg: rgb(47 51 54 / 0.06);
+  --correction-bg: rgb(238 242 231 / 0.75);
+  --eye-white: #f4f6ef;
+  --eye-pupil: #2f3336;
+
+  --img-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .18 0 0 0 0 .2 0 0 0 0 .19 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --img-underline: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 8' preserveAspectRatio='none'%3E%3Cpath d='M1 5.2 C 22 3.4, 41 6.6, 62 4.6 S 101 3.2, 119 5' fill='none' stroke='%2324426e' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  --img-balloon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M33.6 13.4 C 37.4 22.3, 31.6 34.7, 20.4 35.2 C 9.6 35.7, 3.9 26.9, 4.9 18.6 C 5.9 10.2, 13.1 4.4, 21.5 4.9 C 28.6 5.3, 34.6 10.6, 35.4 15.8' fill='none' stroke='%2324426e' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  --img-tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 12'%3E%3Cpath d='M1.5 6.8 C 3 8, 4.4 9.4, 5.6 10.6 C 8 6.6, 11 3.4, 14.8 1.2' fill='none' stroke='%2324426e' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --img-strike: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 10' preserveAspectRatio='none'%3E%3Cpath d='M1 6.2 C 40 4.4, 80 6.8, 120 4.9 S 180 5.6, 199 4.2' fill='none' stroke='%23ae3a2e' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E");
+
+  color-scheme: light;
+}
+
+:root {
+  /* Type */
+  --font-sans: 'Schibsted Grotesk Variable', 'Schibsted Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-hand: 'Kalam', 'Segoe Print', 'Bradley Hand', cursive;
+  --font-mono: ui-monospace, 'SFMono-Regular', 'Cascadia Mono', 'Liberation Mono', Menlo, monospace;
+
+  /* Type scale: 18px base, ratio about 1.25 */
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.9375rem;
+  --fs-base: 1.125rem;
+  --fs-md: 1.3125rem;
+  --fs-lg: 1.625rem;
+  --fs-xl: clamp(2rem, 1.4rem + 2.4vw, 2.875rem);
+  --fs-display: clamp(3.25rem, 1.6rem + 7.2vw, 7.25rem);
+
+  --lh-body: 1.62;
+  --lh-tight: 1.08;
+  --measure: 66ch;
+
+  /* Space: multiples of the 5 mm pad grid (20px) */
+  --grid-step: 20px;
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4.5rem;
+  --s-9: 7rem;
+
+  /* Page geometry: a wide left margin for notes and the chapter line */
+  --margin: clamp(2.5rem, 1rem + 11vw, 11.5rem);
+  --gutter: clamp(1rem, 0.5rem + 3vw, 3.5rem);
+  --page-max: 1320px;
+  --rail-x: calc(var(--margin) - clamp(1.1rem, 0.6rem + 1.6vw, 2.4rem));
+
+  /* Motion */
+  --ease-pencil: cubic-bezier(0.55, 0.1, 0.25, 1);
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --t-draw: 900ms;
+}

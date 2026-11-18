@@ -1,0 +1,319 @@
+/* Shared illustration styles: eyes, diagrams, balloons, highlighter, corrections */
+
+/* Eyes */
+.eye {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  transition: transform 280ms var(--ease-out) var(--d, 0ms);
+}
+
+html.motion [data-draw]:not(.is-drawn) .eye {
+  transform: scaleY(0.06);
+}
+
+.eyes__white {
+  fill: var(--eye-white);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.eyes__pupil {
+  fill: var(--eye-pupil);
+}
+
+.eyes__glint {
+  fill: var(--eye-white);
+}
+
+.eyes__brow {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.pupil {
+  /* Resting gaze: a little down, into the work. */
+  transform: translate(0.6px, 2.2px);
+}
+
+/* Diagram figure */
+.diagram {
+  --balloon: 1.85rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(16rem, 1fr);
+  gap: var(--s-5) var(--s-6);
+  align-items: start;
+}
+
+.diagram--wide {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.diagram--wide .diagram__canvas {
+  max-width: 46rem;
+}
+
+.diagram__canvas {
+  position: relative;
+}
+
+.diagram__svg {
+  width: 100%;
+  height: auto;
+}
+
+.diagram__svg path,
+.diagram__svg line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.diagram__svg .ink {
+  stroke: var(--ink);
+  stroke-width: 1.7;
+}
+
+.diagram__svg .ink-thin {
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+
+.diagram__svg .pencil {
+  stroke: var(--pencil);
+  stroke-width: 1.25;
+}
+
+.diagram__svg .pencil-dash {
+  stroke: var(--pencil);
+  stroke-width: 1.25;
+  stroke-dasharray: 3 5;
+}
+
+.diagram__svg .ink-dash {
+  stroke: var(--ink);
+  stroke-width: 1.3;
+  stroke-dasharray: 5 5;
+}
+
+.diagram__svg .red {
+  stroke: var(--red-pencil);
+  stroke-width: 2;
+}
+
+.diagram__svg .fill-paper {
+  fill: var(--pad-raised);
+  stroke: none;
+}
+
+.diagram__svg .hatching {
+  stroke: var(--pencil);
+  stroke-width: 0.8;
+  opacity: 0.55;
+}
+
+.diagram__svg text {
+  fill: var(--graphite);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 550;
+}
+
+.diagram__svg .t-small {
+  font-size: 12.5px;
+  font-weight: 500;
+  fill: var(--pencil);
+}
+
+.diagram__svg .t-mono {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-weight: 400;
+  fill: var(--graphite);
+}
+
+.diagram__svg .t-hand {
+  font-family: var(--font-hand);
+  font-weight: 300;
+  font-size: 17px;
+  fill: var(--ink);
+}
+
+.diagram__svg .t-red {
+  font-family: var(--font-hand);
+  font-weight: 400;
+  font-size: 16px;
+  fill: var(--red-pencil);
+}
+
+.diagram__svg .t-pencil {
+  fill: var(--pencil);
+}
+
+/* Highlighter sweeps, revealed for the active callout */
+.diagram__svg .hl {
+  stroke: var(--highlighter);
+  stroke-linecap: round;
+  opacity: 0;
+  mix-blend-mode: var(--hl-blend);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition:
+    stroke-dashoffset 420ms var(--ease-pencil),
+    opacity 0ms linear 420ms;
+}
+
+[data-part].is-active .hl {
+  opacity: var(--hl-svg-opacity);
+  stroke-dashoffset: 0;
+  transition:
+    stroke-dashoffset 420ms var(--ease-pencil),
+    opacity 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diagram__svg .hl {
+    transition: none;
+  }
+}
+
+/* Balloons: the numbered callouts on the drawing */
+.balloon {
+  position: absolute;
+  width: var(--balloon);
+  height: var(--balloon);
+  margin: calc(var(--balloon) / -2) 0 0 calc(var(--balloon) / -2);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--pad);
+  color: var(--ink);
+  font-family: var(--font-hand);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.balloon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--img-balloon) center / 100% 100% no-repeat;
+  transition: transform 220ms var(--ease-out);
+}
+
+.balloon > span:first-child {
+  position: relative;
+  transform: translateY(1px);
+}
+
+.balloon:hover::before,
+.balloon.is-active::before {
+  transform: scale(1.18) rotate(-8deg);
+}
+
+.balloon.is-active {
+  background: var(--highlighter);
+  color: var(--on-highlighter);
+}
+
+/* The always-visible callout list beside the drawing */
+.callouts {
+  list-style: none;
+  display: grid;
+  gap: var(--s-1);
+  counter-reset: none;
+}
+
+.callouts li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  gap: 0 var(--s-3);
+  padding: var(--s-2) var(--s-3) var(--s-2) var(--s-2);
+  border-radius: 3px 6px 4px 7px;
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  cursor: default;
+  transition: background-color 200ms ease;
+}
+
+.callouts li.is-active {
+  background: linear-gradient(100deg, transparent, var(--hl-strong) 8%, var(--hl-strong) 92%, transparent);
+}
+
+.callouts__n {
+  grid-row: span 2;
+  font-family: var(--font-hand);
+  font-size: 1.05rem;
+  color: var(--ink);
+  line-height: 1.3;
+  text-align: center;
+}
+
+.callouts strong {
+  font-family: var(--font-sans);
+  font-weight: 650;
+  font-size: var(--fs-sm);
+  color: var(--graphite);
+}
+
+.callouts p {
+  color: var(--graphite);
+}
+
+.diagram figcaption {
+  margin-top: var(--s-3);
+  font-family: var(--font-hand);
+  font-weight: 300;
+  font-size: 1.05rem;
+  color: var(--pencil);
+  line-height: 1.35;
+  max-width: 48ch;
+}
+
+@media (max-width: 62rem) {
+  .diagram {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.diagram__hint {
+  display: none;
+}
+
+@media (max-width: 47.99rem) {
+  .diagram {
+    --balloon: 1.7rem;
+  }
+
+  /* Keep drawings at a readable size and let them pan inside their own frame. */
+  .diagram__scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    margin-inline: calc(var(--gutter) * -0.5) calc(var(--gutter) * -1);
+    padding: var(--s-3) var(--gutter) var(--s-3) calc(var(--gutter) * 0.5);
+    scrollbar-width: thin;
+    scrollbar-color: var(--pencil-faint) transparent;
+  }
+
+  .diagram__canvas {
+    min-width: 34rem;
+  }
+
+  .diagram--wide .diagram__canvas {
+    min-width: 30rem;
+  }
+
+  .diagram__hint {
+    display: block;
+    margin-bottom: var(--s-1);
+    font-size: 1rem;
+    color: var(--pencil);
+  }
+}

@@ -1,0 +1,449 @@
+/* Page structure: the pad, its margin, sheets and title blocks */
+
+.page {
+  position: relative;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-right: var(--gutter);
+}
+
+/* Header: name and an index of the sheets */
+.site-header {
+  display: grid;
+  grid-template-columns: var(--margin) minmax(0, 1fr);
+  padding-block: var(--s-5) var(--s-4);
+}
+
+.site-header__inner {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-6);
+}
+
+.site-nav {
+  margin-left: auto;
+}
+
+.wordmark {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.01em;
+  color: var(--graphite);
+  text-decoration: none;
+}
+
+.site-nav ol {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-5);
+}
+
+.site-nav a {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--graphite);
+  text-decoration: none;
+  padding-block: var(--s-1);
+}
+
+.site-nav a .n {
+  color: var(--pencil);
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.35em;
+}
+
+.site-nav a:hover {
+  color: var(--ink);
+}
+
+/* Sheets: one per chapter, sharing the page's margin column */
+.sheet {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--margin) minmax(0, 1fr);
+  padding-block: var(--s-7) var(--s-7);
+}
+
+.sheet + .sheet {
+  border-top: 0;
+}
+
+.sheet__margin {
+  grid-column: 1;
+  position: relative;
+}
+
+.sheet__body {
+  grid-column: 2;
+  min-width: 0;
+}
+
+.sheet__head {
+  margin-bottom: var(--s-7);
+}
+
+.sheet__head h2 {
+  margin-top: var(--s-5);
+  max-width: 22ch;
+}
+
+.sheet__intro {
+  margin-top: var(--s-4);
+  max-width: var(--measure);
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  color: var(--graphite);
+}
+
+/* The chapter marker that sits on the margin line at the start of each sheet */
+.marker {
+  position: absolute;
+  top: calc(var(--s-7) - 0.35rem);
+  left: calc(var(--rail-x) - 1.05rem);
+  width: 2.1rem;
+  height: 2.1rem;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+}
+
+.marker svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.marker__fill {
+  fill: var(--pad);
+}
+
+.marker__ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+.marker__n {
+  position: relative;
+  font-family: var(--font-hand);
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--ink);
+  transform: translateY(1px);
+}
+
+/* Title block: the header strip of a computation pad, holding real metadata */
+.titleblock {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.titleblock dl {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.titleblock dl > div {
+  padding: 0.45rem 0.9rem 0.5rem;
+  border-right: 1px solid var(--rule);
+  min-width: 0;
+}
+
+.titleblock dl > div:last-child {
+  border-right: 0;
+}
+
+.titleblock dt {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--pencil);
+  line-height: 1.2;
+}
+
+.titleblock dd {
+  margin: 0.1rem 0 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--graphite);
+  line-height: 1.25;
+}
+
+.titleblock__frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.titleblock__frame path {
+  fill: none;
+  stroke: var(--pencil);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* The chapter line: drawn down the margin as you read */
+.chapter-line {
+  position: absolute;
+  top: var(--line-top, 22rem);
+  bottom: var(--line-bottom, 12rem);
+  left: calc(var(--rail-x) - 6px);
+  width: 12px;
+  pointer-events: none;
+}
+
+.chapter-line svg {
+  width: 100%;
+  height: 100%;
+}
+
+.chapter-line path {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  opacity: 0.75;
+}
+
+.chapter-line__ghost path {
+  stroke: var(--pencil-faint);
+  stroke-dasharray: 2 7;
+  opacity: 0.6;
+}
+
+.chapter-line__ink {
+  position: absolute;
+  inset: 0;
+}
+
+@supports (animation-timeline: view()) {
+  html.motion .chapter-line__ink {
+    animation: line-reveal linear both;
+    animation-timeline: view();
+    animation-range: cover 50vh cover calc(100% - 50vh);
+  }
+}
+
+@keyframes line-reveal {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Buttons: ink-filled and pencil-outlined, with slightly uneven corners */
+.btn {
+  --r: 5px 9px 6px 11px / 9px 5px 11px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  min-height: 2.9rem;
+  padding: 0.6rem 1.25rem 0.65rem;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: 650;
+  letter-spacing: 0.005em;
+  text-decoration: none;
+  border-radius: var(--r);
+  border: 1.5px solid var(--ink);
+  cursor: pointer;
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.btn:hover {
+  background-image: none;
+  animation: none;
+  transform: translateY(-1px) rotate(-0.4deg);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn--ink {
+  background: var(--ink);
+  color: var(--on-ink);
+  box-shadow: 2px 3px 0 var(--shadow-ink);
+}
+
+.btn--ink:hover {
+  background: var(--ink-deep);
+  box-shadow: 3px 4px 0 var(--shadow-ink);
+}
+
+.btn--pencil {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--pencil);
+}
+
+.btn--pencil:hover {
+  background: var(--hl-soft);
+}
+
+.btn[aria-disabled='true'] {
+  border-style: dashed;
+  border-color: var(--pencil);
+  background: transparent;
+  color: var(--pencil);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.btn[aria-disabled='true']:hover {
+  transform: none;
+}
+
+.btn svg {
+  width: 1.05em;
+  height: 1.05em;
+  flex: none;
+}
+
+/* Status swatches: ink, pencil, dotted pencil */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--graphite);
+}
+
+.status::before {
+  content: '';
+  width: 1.6em;
+  height: 0;
+  border-top: 2px solid var(--ink);
+}
+
+.status--in-progress::before,
+.status--now::before {
+  border-top-color: var(--pencil);
+  border-top-width: 1.5px;
+}
+
+.status--planned::before,
+.status--next::before {
+  border-top: 2px dotted var(--pencil);
+}
+
+/* Draw-on-view: strokes start undrawn only when JS and motion are available */
+html.motion [data-draw]:not(.is-drawn) .draw {
+  stroke-dashoffset: 1;
+}
+
+html.motion [data-draw] .draw {
+  stroke-dasharray: 1;
+  transition: stroke-dashoffset var(--dur, var(--t-draw)) var(--ease-pencil) var(--d, 0ms);
+}
+
+html.motion [data-draw]:not(.is-drawn) .appear {
+  opacity: 0;
+}
+
+html.motion [data-draw] .appear {
+  transition: opacity 420ms ease var(--d, 0ms);
+}
+
+/* Footer */
+.site-footer {
+  display: grid;
+  grid-template-columns: var(--margin) minmax(0, 1fr);
+  padding-block: var(--s-6) var(--s-7);
+}
+
+.site-footer p {
+  grid-column: 2;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  color: var(--pencil);
+}
+
+/* Narrow screens: the margin becomes a thin rail */
+@media (max-width: 47.99rem) {
+  :root {
+    --margin: 2.4rem;
+    --gutter: 1rem;
+    --rail-x: 1.2rem;
+  }
+
+  .sheet {
+    padding-block: var(--s-7);
+  }
+
+  .marker {
+    top: calc(var(--s-7) - 0.35rem);
+    width: 1.8rem;
+    height: 1.8rem;
+    left: calc(var(--rail-x) - 0.9rem);
+  }
+
+  .marker__n {
+    font-size: 0.875rem;
+  }
+
+  .titleblock dl > div {
+    padding: 0.35rem 0.6rem 0.4rem;
+  }
+
+  .site-nav ol {
+    gap: var(--s-1) var(--s-4);
+  }
+
+  /* name and theme switch on the first row, the sheet index below */
+  .wordmark {
+    flex: 1;
+  }
+  .site-nav {
+    order: 3;
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+  .chapter-line,
+  .site-nav,
+  .marker {
+    display: none;
+  }
+  .sheet {
+    break-inside: avoid-page;
+    padding-block: var(--s-5);
+  }
+}
+
+/* The chapter line belongs to main, running from the first marker to the last sheet. */
+.sheets {
+  position: relative;
+  display: block;
+}
+
+.sheets > .chapter-line {
+  top: calc(var(--s-5) + 0.7rem);
+  bottom: var(--s-8);
+}
