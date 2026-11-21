@@ -6,7 +6,7 @@
  */
 export const profile = {
   name: 'Sami Hajji',
-  title: 'DevOps / Cloud Engineer',
+  title: 'DevOps / Platform Engineer',
   location: 'Nablus, Palestine',
   availability: 'Open to remote work and relocation.',
   email: 'samimassoud67@gmail.com',
